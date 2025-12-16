@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Sign In with Google - Pulse{% endblock %}
+
+{% block head_extra %}
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  .animate-fadeIn {
+    animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+  }
+  
+  .animate-slideUp {
+    animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+  }
+  
+  .delay-200 {
+    animation-delay: 0.2s;
+  }
+  
+  .gradient-text {
+    background: linear-gradient(135deg, #0073E6 0%, #7C00E6 50%, #FF7200 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .glass {
+    background: rgba(20, 27, 77, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 115, 230, 0.2);
+  }
+  
+  .premium-button {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg, #0073E6 0%, #7C00E6 50%, #FF7200 100%);
+  }
+  
+  .premium-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+  }
+  
+  .premium-button:hover::before {
+    left: 100%;
+  }
+  
+  .premium-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(0, 115, 230, 0.5), 0 0 60px rgba(124, 0, 230, 0.3);
+  }
+  
+  .icon-float {
+    animation: float 3s ease-in-out infinite;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy flex items-center justify-center py-4 sm:py-6 lg:py-8 px-3 sm:px-4 lg:px-8 relative overflow-hidden">
+  <!-- Background decorative elements -->
+  <div class="absolute top-10 left-10 w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 bg-pulse-blue/20 rounded-full filter blur-xl opacity-30 animate-float"></div>
+  <div class="absolute bottom-10 right-10 w-32 h-32 sm:w-48 sm:h-48 lg:w-64 lg:h-64 bg-pulse-purple/20 rounded-full filter blur-xl opacity-30 animate-float" style="animation-delay: 1.5s;"></div>
+  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-40 h-40 sm:w-64 sm:h-64 lg:w-80 lg:h-80 bg-pulse-orange/20 rounded-full filter blur-xl opacity-30 animate-float" style="animation-delay: 0.75s;"></div>
+  
+  <div class="max-w-md w-full space-y-3 sm:space-y-4 relative z-10">
+    <!-- Header -->
+    <div class="text-center animate-fadeIn">
+      <div class="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full bg-pulse-gradient shadow-pulse-sm sm:shadow-pulse mb-2 sm:mb-3 icon-float">
+        <span class="font-display font-extrabold text-xl sm:text-2xl text-white">P</span>
+      </div>
+      <h2 class="text-2xl sm:text-3xl lg:text-4xl font-display font-extrabold gradient-text mb-1">
+        {% if process == "connect" %}
+          Connect Google Account
+        {% else %}
+          Sign In with Google
+        {% endif %}
+      </h2>
+      <p class="text-xs sm:text-sm text-text-muted">
+        {% if process == "connect" %}
+          Connect your Google account to your Pulse account
+        {% else %}
+          Continue to sign in using your Google account
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="glass rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl p-4 sm:p-6 md:p-8 animate-slideUp delay-200">
+      <!-- Google Logo -->
+      <div class="flex justify-center mb-4 sm:mb-6">
+        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
+          <svg class="w-10 h-10 sm:w-12 sm:h-12" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Message -->
+      <div class="text-center mb-4 sm:mb-6">
+        <p class="text-sm sm:text-base text-white mb-2">
+          {% if process == "connect" %}
+            You are about to connect a new third-party account from <strong>Google</strong>.
+          {% else %}
+            You are about to sign in using a third-party account from <strong>Google</strong>.
+          {% endif %}
+        </p>
+        <p class="text-xs sm:text-sm text-text-muted">
+          Click continue to proceed with Google authentication.
+        </p>
+      </div>
+
+      <!-- Continue Button -->
+      <form method="post" class="space-y-3 sm:space-y-4">
+        {% csrf_token %}
+        <div class="pt-1 sm:pt-2">
+          <button 
+            type="submit" 
+            class="premium-button w-full flex justify-center items-center py-2.5 sm:py-3 px-4 sm:px-6 border border-transparent rounded-lg sm:rounded-xl shadow-lg text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 font-semibold text-sm sm:text-base"
+          >
+            <span>Continue</span>
+            <svg class="ml-1.5 sm:ml-2 h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+          </button>
+        </div>
+      </form>
+
+      <!-- Back Link -->
+      <div class="mt-4 sm:mt-6 text-center">
+        <a href="{% url 'login' %}" class="text-xs sm:text-sm text-gray-400 hover:text-gray-300 transition-colors flex items-center justify-center gap-1">
+          <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Back to login
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

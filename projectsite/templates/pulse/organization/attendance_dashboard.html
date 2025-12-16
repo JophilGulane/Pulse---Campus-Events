@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Attendance Dashboard - {{ organization.name }}{% endblock %}
+
+{% block head_extra %}
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeInUp { animation: fadeInUp 0.6s ease-out; }
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+  .delay-400 { animation-delay: 0.4s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 py-6 sm:py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <!-- Header -->
+    <div class="animate-fadeInUp">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div class="text-xs uppercase tracking-[0.3em] text-indigo-400">Organization Dashboard</div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            {{ organization.name }}
+          </h1>
+          <p class="text-sm text-gray-500 mt-1">Mandatory attendance overview for all members.</p>
+        </div>
+        <a href="{% url 'organization-members' organization.pk %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-white shadow-sm transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Back to members
+        </a>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white rounded-2xl shadow-xl p-5 animate-fadeInUp delay-100">
+        <p class="text-xs uppercase tracking-wide text-gray-500">Average score</p>
+        <div class="mt-2 flex items-baseline gap-1">
+          <span class="text-3xl font-extrabold text-indigo-600">{{ summary.average_score|default:0 }}%</span>
+        </div>
+        <p class="text-[0.7rem] text-gray-500 mt-1">Across {{ members|length }} members</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-xl p-5 animate-fadeInUp delay-150">
+        <p class="text-xs uppercase tracking-wide text-gray-500">Mandatory events</p>
+        <p class="text-3xl font-bold text-gray-900">{{ total_mandatory_events }}</p>
+        <p class="text-[0.7rem] text-gray-500 mt-1">{{ total_scans_per_member }} scans per member</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow-xl p-5 animate-fadeInUp delay-200">
+        <p class="text-xs uppercase tracking-wide text-gray-500">Top member</p>
+        {% if summary.top_member %}
+        <p class="text-lg font-semibold text-gray-900">{{ summary.top_member.user.get_full_name|default:summary.top_member.user.username }}</p>
+        <p class="text-sm text-indigo-600 font-bold">{{ summary.top_member.score_percent }}%</p>
+        {% else %}
+        <p class="text-sm text-gray-500">No data yet</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Members Table -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden animate-fadeInUp delay-300">
+      {% if members %}
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-50 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+            <tr>
+              <th class="px-4 sm:px-6 py-3 text-left">Member</th>
+              <th class="px-4 sm:px-6 py-3 text-left">Role</th>
+              <th class="px-4 sm:px-6 py-3 text-center">Scans</th>
+              <th class="px-4 sm:px-6 py-3 text-center">Points</th>
+              <th class="px-4 sm:px-6 py-3 text-center">Score</th>
+              <th class="px-4 sm:px-6 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            {% for row in members %}
+            <tr class="hover:bg-slate-50 transition">
+              <td class="px-4 sm:px-6 py-4">
+                <div class="flex flex-col">
+                  <span class="font-semibold text-gray-900">{{ row.user.get_full_name|default:row.user.username }}</span>
+                  <span class="text-xs text-gray-500">@{{ row.user.username }}</span>
+                </div>
+              </td>
+              <td class="px-4 sm:px-6 py-4">
+                <span class="inline-flex px-3 py-1 rounded-full text-xs font-semibold
+                {% if row.role == 'ORGANIZER' %}bg-purple-100 text-purple-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                  {{ row.role|title }}
+                </span>
+              </td>
+              <td class="px-4 sm:px-6 py-4 text-center text-sm text-gray-700">
+                {{ row.scans }} / {{ total_scans_per_member }}
+              </td>
+              <td class="px-4 sm:px-6 py-4 text-center text-sm text-gray-700">
+                {{ row.points|intcomma }}
+              </td>
+              <td class="px-4 sm:px-6 py-4 text-center">
+                <div class="inline-flex items-center gap-2">
+                  <div class="w-20 bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-emerald-400 to-indigo-500" style="width: {{ row.score_percent }}%"></div>
+                  </div>
+                  <span class="text-xs font-semibold text-gray-700">{{ row.score_percent }}%</span>
+                </div>
+              </td>
+              <td class="px-4 sm:px-6 py-4 text-right">
+                <a href="{% url 'organization-mandatory-summary' organization.pk %}?user={{ row.user.pk }}"
+                   class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold hover:bg-blue-100 transition">
+                  View breakdown
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                  </svg>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="p-10 text-center text-gray-500 text-sm">
+        No members to display.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+

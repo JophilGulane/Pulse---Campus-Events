@@ -1,0 +1,713 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load auth_helpers %}
+
+{% block title %}Events - Pulse{% endblock %}
+
+{% block head_extra %}
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .feed-item {
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+  }
+
+  .feed-item:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+
+  .feed-item:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .feed-item:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  .feed-item:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+
+  .feed-item:nth-child(5) {
+    animation-delay: 0.5s;
+  }
+
+  .feed-item:nth-child(6) {
+    animation-delay: 0.6s;
+  }
+
+  .feed-item:nth-child(7) {
+    animation-delay: 0.7s;
+  }
+
+  .feed-item:nth-child(8) {
+    animation-delay: 0.8s;
+  }
+
+  .feed-item:nth-child(n+9) {
+    animation-delay: 0.9s;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes glow {
+
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(0, 115, 230, 0.5);
+    }
+
+    50% {
+      box-shadow: 0 0 30px rgba(0, 115, 230, 0.8);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .delay-100 {
+    animation-delay: 0.1s;
+  }
+
+  .delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .delay-300 {
+    animation-delay: 0.3s;
+  }
+
+  .delay-400 {
+    animation-delay: 0.4s;
+  }
+
+  /* Premium Card Effects */
+  .premium-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .premium-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.6s;
+  }
+
+  .premium-card:hover::before {
+    left: 100%;
+  }
+
+  .premium-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 0 30px rgba(0, 115, 230, 0.5), 0 0 60px rgba(124, 0, 230, 0.3);
+  }
+
+  /* Glassmorphism */
+  .glass {
+    background: rgba(20, 27, 77, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Gradient Text Animation */
+  .gradient-text {
+    background: linear-gradient(135deg, #0073E6 0%, #7C00E6 50%, #FF7200 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy overflow-x-hidden">
+  <!-- Mobile-First Compact Header -->
+  <div class="sticky top-0 z-40 bg-pulse-navyLight/95 backdrop-blur-lg border-b border-pulse-blue/20 lg:hidden">
+    <div class="px-3 py-2">
+      {% can_create_event as user_can_create_event %}
+      <div class="flex items-center justify-between">
+        <div class="flex-1 flex justify-start">
+          <button type="button" id="event-filters-toggle-mobile"
+            class="p-2 rounded-xl border border-pulse-blue/30 bg-pulse-navyLight text-text-secondary hover:bg-pulse-navyLighter hover:text-white transition-all shadow-pulse-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 4a1 1 0 011-1h16a1 1 0 01.8 1.6l-5.6 7.467V18a1 1 0 01-.553.894l-4 2A1 1 0 019 20v-6.933L3.2 5.6A1 1 0 013 4z" />
+            </svg>
+          </button>
+        </div>
+        <div class="flex-1 text-center">
+          <p class="text-[10px] text-text-muted uppercase tracking-wide mb-0.5">{{ now|date:"l, M d"|upper }}</p>
+          <h1 class="text-xl font-bold text-white">Events</h1>
+        </div>
+        <div class="flex-1 flex justify-end">
+          {% if user_can_create_event %}
+          <a href="{% url 'event-create' %}"
+            class="p-2 rounded-xl border border-pulse-blue/30 bg-pulse-navyLight text-text-secondary hover:bg-pulse-navyLighter hover:text-white transition-all shadow-pulse-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+          </a>
+          {% else %}
+          <div class="w-9"></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop Header -->
+  <div class="hidden lg:block max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8 animate-fade-in-up">
+      <div class="flex justify-between items-center mb-2">
+        <div class="text-left">
+          <h1 class="text-4xl md:text-5xl font-display font-bold pulse-gradient-text mb-1">
+            Browse Events
+          </h1>
+          <p class="text-sm md:text-base text-text-secondary">
+            Discover upcoming and past events in your community
+          </p>
+        </div>
+        <div class="flex items-center">
+          {% can_create_event as user_can_create_event %}
+          {% if user_can_create_event %}
+          <a href="{% url 'event-create' %}"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-pulse-gradient text-white rounded-pulse-lg font-semibold shadow-pulse-sm hover:opacity-90 transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Create Event
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-8">
+
+    <!-- Stats Card (Desktop Only) -->
+    <div class="hidden lg:block mb-8 animate-fade-in-up delay-200">
+      <div
+        class="bg-pulse-navyLight/80 backdrop-blur-lg rounded-pulse-lg shadow-pulse p-6 hover:shadow-pulse transition-shadow max-w-md mx-auto md:mx-0 border border-pulse-blue/20">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs sm:text-sm font-medium text-text-muted">Total Events</p>
+            <p class="text-xl sm:text-2xl lg:text-3xl font-bold pulse-gradient-text mt-1 sm:mt-2">{{ events.count }}</p>
+          </div>
+          <div
+            class="w-10 h-10 sm:w-12 sm:h-12 bg-pulse-gradient rounded-full flex items-center justify-center shadow-pulse-sm flex-shrink-0">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Filters Panel -->
+    <div id="event-filters-panel-mobile"
+      class="lg:hidden mb-4 bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-4 hidden border border-pulse-blue/20 mx-4">
+      <form method="get" action="{% url 'event-list' %}" class="space-y-3" id="event-filter-form-mobile">
+        <div class="space-y-3">
+          <!-- Search -->
+          <div>
+            <label for="search-mobile" class="block text-xs font-medium text-white mb-1.5">Search</label>
+            <input type="text" name="search" id="search-mobile" value="{{ current_search }}"
+              placeholder="Search events..."
+              class="w-full px-3 py-2 text-sm border border-pulse-blue/20 rounded-pulse focus:ring-2 focus:ring-pulse-blue focus:border-pulse-blue bg-pulse-navyLighter text-white">
+          </div>
+
+          <!-- Organization Filter -->
+          <div>
+            <label for="organization-mobile" class="block text-xs font-medium text-white mb-1.5">Organization</label>
+            <select name="organization" id="organization-mobile"
+              class="w-full px-3 py-2 text-sm border border-pulse-blue/20 rounded-pulse focus:ring-2 focus:ring-pulse-blue focus:border-pulse-blue bg-pulse-navyLighter text-white">
+              <option value="">All Organizations</option>
+              <option value="global" {% if current_org == 'global' %}selected{% endif %}>Global Events</option>
+              {% for org in organizations %}
+              <option value="{{ org.id }}" {% if current_org == org.id|stringformat:"s" %}selected{% endif %}>{{ org.name
+                }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Event Type Filter -->
+          <div>
+            <label for="event_type-mobile" class="block text-xs font-medium text-white mb-1.5">Event Type</label>
+            <select name="event_type" id="event_type-mobile"
+              class="w-full px-3 py-2 text-sm border border-pulse-blue/20 rounded-pulse focus:ring-2 focus:ring-pulse-blue focus:border-pulse-blue bg-pulse-navyLighter text-white">
+              <option value="">All Types</option>
+              <option value="MANDATORY" {% if current_event_type == 'MANDATORY' %}selected{% endif %}>Mandatory</option>
+              <option value="OPTIONAL" {% if current_event_type == 'OPTIONAL' %}selected{% endif %}>Optional</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Filter Buttons and Actions -->
+        <div class="flex flex-col gap-3 pt-2">
+          <!-- Time Filter Buttons -->
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="setFilterMobile('all')"
+              class="px-3 py-1.5 rounded-pulse text-xs font-medium transition-all {% if current_filter == 'all' or not current_filter %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white border border-pulse-blue/20 hover:bg-pulse-navyLight{% endif %}">
+              All
+            </button>
+            <button type="button" onclick="setFilterMobile('upcoming')"
+              class="px-3 py-1.5 rounded-pulse text-xs font-medium transition-all {% if current_filter == 'upcoming' %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white border border-pulse-blue/20 hover:bg-pulse-navyLight{% endif %}">
+              Upcoming
+            </button>
+            <button type="button" onclick="setFilterMobile('ongoing')"
+              class="px-3 py-1.5 rounded-pulse text-xs font-medium transition-all {% if current_filter == 'ongoing' %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white border border-pulse-blue/20 hover:bg-pulse-navyLight{% endif %}">
+              Ongoing
+            </button>
+            <button type="button" onclick="setFilterMobile('past')"
+              class="px-3 py-1.5 rounded-pulse text-xs font-medium transition-all {% if current_filter == 'past' %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white border border-pulse-blue/20 hover:bg-pulse-navyLight{% endif %}">
+              Past
+            </button>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-col gap-2">
+            <button type="submit"
+              class="w-full px-4 py-2 text-sm bg-pulse-gradient text-white rounded-pulse font-medium hover:opacity-90 transition-all shadow-pulse-sm text-center">
+              Apply Filters
+            </button>
+            <a href="{% url 'event-list' %}"
+              class="w-full px-4 py-2 text-sm bg-pulse-navyLighter text-white rounded-pulse font-medium hover:bg-pulse-navyLight transition-all text-center border border-pulse-blue/20">
+              Clear
+            </a>
+          </div>
+        </div>
+        <input type="hidden" name="filter" id="filter-input-mobile" value="{{ current_filter }}">
+      </form>
+    </div>
+
+    <!-- Filters Section (Desktop Only) -->
+    <div class="hidden lg:block mb-6 animate-fade-in-up delay-300">
+      <button type="button" id="event-filters-toggle"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-pulse-full border border-pulse-blue/30 bg-pulse-navyLight text-sm font-medium text-text-secondary hover:bg-pulse-navyLighter shadow-pulse-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 4a1 1 0 011-1h16a1 1 0 01.8 1.6l-5.6 7.467V18a1 1 0 01-.553.894l-4 2A1 1 0 019 20v-6.933L3.2 5.6A1 1 0 013 4z" />
+        </svg>
+        <span>Filters</span>
+      </button>
+
+      <div id="event-filters-panel"
+        class="mt-4 bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-6 hidden border border-pulse-blue/20">
+        <form method="get" action="{% url 'event-list' %}" class="space-y-3 sm:space-y-4" id="event-filter-form">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
+            <!-- Search -->
+            <div class="md:col-span-2">
+              <label for="search" class="block text-xs sm:text-sm font-medium text-white mb-1.5 sm:mb-2">Search</label>
+              <input type="text" name="search" id="search" value="{{ current_search }}" placeholder="Search events..."
+                class="w-full px-3 sm:px-4 py-2 text-sm border border-pulse-blue/20 rounded-pulse focus:ring-2 focus:ring-pulse-blue focus:border-pulse-blue bg-pulse-navyLighter text-white">
+            </div>
+
+            <!-- Organization Filter -->
+            <div>
+              <label for="organization"
+                class="block text-xs sm:text-sm font-medium text-white mb-1.5 sm:mb-2">Organization</label>
+              <select name="organization" id="organization"
+                class="w-full px-3 sm:px-4 py-2 text-sm border border-pulse-blue/20 rounded-pulse focus:ring-2 focus:ring-pulse-blue focus:border-pulse-blue bg-pulse-navyLighter text-white">
+                <option value="">All Organizations</option>
+                <option value="global" {% if current_org == 'global' %}selected{% endif %}>Global Events</option>
+                {% for org in organizations %}
+                <option value="{{ org.id }}" {% if current_org == org.id|stringformat:"s" %}selected{% endif %}>{{
+                  org.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Event Type Filter -->
+            <div>
+              <label for="event_type" class="block text-xs sm:text-sm font-medium text-white mb-1.5 sm:mb-2">Event
+                Type</label>
+              <select name="event_type" id="event_type"
+                class="w-full px-3 sm:px-4 py-2 text-sm border border-pulse-blue/20 rounded-pulse focus:ring-2 focus:ring-pulse-blue focus:border-pulse-blue bg-pulse-navyLighter text-white">
+                <option value="">All Types</option>
+                <option value="MANDATORY" {% if current_event_type == 'MANDATORY' %}selected{% endif %}>Mandatory</option>
+                <option value="OPTIONAL" {% if current_event_type == 'OPTIONAL' %}selected{% endif %}>Optional</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Filter Buttons and Actions -->
+          <div class="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center pt-2">
+            <!-- Time Filter Buttons -->
+            <div class="flex flex-wrap gap-1.5 sm:gap-2 w-full">
+              <button type="button" onclick="setFilter('all')"
+                class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-pulse text-xs sm:text-sm font-medium transition-all {% if current_filter == 'all' or not current_filter %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white border border-pulse-blue/20 hover:bg-pulse-navyLight{% endif %}">
+                All
+              </button>
+              <button type="button" onclick="setFilter('upcoming')"
+                class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-pulse text-xs sm:text-sm font-medium transition-all {% if current_filter == 'upcoming' %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white border border-pulse-blue/20 hover:bg-pulse-navyLight{% endif %}">
+                Upcoming
+              </button>
+              <button type="button" onclick="setFilter('ongoing')"
+                class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-pulse text-xs sm:text-sm font-medium transition-all {% if current_filter == 'ongoing' %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white border border-pulse-blue/20 hover:bg-pulse-navyLight{% endif %}">
+                Ongoing
+              </button>
+              <button type="button" onclick="setFilter('past')"
+                class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-pulse text-xs sm:text-sm font-medium transition-all {% if current_filter == 'past' %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white border border-pulse-blue/20 hover:bg-pulse-navyLight{% endif %}">
+                Past
+              </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto lg:ml-auto">
+              <button type="submit"
+                class="w-full sm:w-auto px-4 sm:px-6 py-2 text-sm sm:text-base bg-pulse-gradient text-white rounded-pulse font-medium hover:opacity-90 transition-all shadow-pulse-sm text-center">
+                Apply Filters
+              </button>
+              <a href="{% url 'event-list' %}"
+                class="w-full sm:w-auto px-4 sm:px-6 py-2 text-sm sm:text-base bg-pulse-navyLighter text-white rounded-pulse font-medium hover:bg-pulse-navyLight transition-all text-center border border-pulse-blue/20">
+                Clear
+              </a>
+            </div>
+          </div>
+          <input type="hidden" name="filter" id="filter-input" value="{{ current_filter }}">
+        </form>
+      </div>
+    </div>
+
+    <script>
+      function setFilter(filterValue) {
+        document.getElementById('filter-input').value = filterValue;
+        document.getElementById('event-filter-form').submit();
+      }
+
+      function setFilterMobile(filterValue) {
+        document.getElementById('filter-input-mobile').value = filterValue;
+        document.getElementById('event-filter-form-mobile').submit();
+      }
+
+      (function () {
+        const toggle = document.getElementById('event-filters-toggle');
+        const panel = document.getElementById('event-filters-panel');
+        if (toggle && panel) {
+          toggle.addEventListener('click', function () {
+            panel.classList.toggle('hidden');
+          });
+        }
+
+        const toggleMobile = document.getElementById('event-filters-toggle-mobile');
+        const panelMobile = document.getElementById('event-filters-panel-mobile');
+        if (toggleMobile && panelMobile) {
+          toggleMobile.addEventListener('click', function () {
+            panelMobile.classList.toggle('hidden');
+          });
+        }
+      })();
+    </script>
+
+    <!-- Events List -->
+    {% if events %}
+    <div class="space-y-3 sm:space-y-4 lg:space-y-6 max-w-2xl mx-auto lg:max-w-4xl">
+      {% for event in events %}
+      <div class="feed-item">
+        <!-- Mobile-First Event Card with Image Background -->
+        <a href="{% url 'event-detail' event.pk %}" class="block">
+          <div
+            class="relative rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 h-64 sm:h-72 lg:h-80">
+            <!-- Background Image or Gradient -->
+            {% if event.image %}
+            <div class="absolute inset-0">
+              <img src="{{ event.image.url }}" alt="{{ event.title }}" class="w-full h-full object-cover">
+              <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/40"></div>
+            </div>
+            {% else %}
+            <div
+              class="absolute inset-0 bg-gradient-to-br {% if event.is_ongoing %}from-pulse-orange/80 to-pulse-orange/60{% elif event.end_datetime < now %}from-pulse-blue/60 to-pulse-blue/40{% else %}from-pulse-blue/80 to-pulse-purple/60{% endif %}">
+            </div>
+            {% endif %}
+
+            <!-- Date Badge (Top Right) -->
+            <div class="absolute top-3 right-3 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 text-center shadow-lg">
+              <div class="text-lg font-bold text-pulse-navy">{{ event.start_datetime|date:"d" }}</div>
+              <div class="text-[10px] font-semibold text-pulse-navy uppercase">{{ event.start_datetime|date:"M" }}</div>
+            </div>
+
+            <!-- Content Overlay (Bottom) -->
+            <div class="absolute bottom-0 left-0 right-0 p-4 sm:p-5 lg:p-6">
+              <!-- Event Title -->
+              <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-white mb-2 line-clamp-2">{{ event.title }}</h3>
+
+              <!-- Event Description -->
+              {% if event.description %}
+              <p class="text-xs sm:text-sm text-white/90 mb-3 line-clamp-2">{{ event.description|truncatewords:15 }}</p>
+              {% endif %}
+
+              <!-- Important Event Details -->
+              <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+                <!-- Organization Badge -->
+                {% if event.organization %}
+                <span class="inline-flex items-center px-2 py-1 rounded-lg bg-pulse-purple/80 text-white font-medium">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                    </path>
+                  </svg>
+                  {{ event.organization.name }}
+                </span>
+                {% else %}
+                <span class="inline-flex items-center px-2 py-1 rounded-lg bg-pulse-blue/80 text-white font-medium">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                  </svg>
+                  Global
+                </span>
+                {% endif %}
+
+                <!-- Status Badge -->
+                {% if event.is_ongoing %}
+                <span class="inline-flex items-center px-2 py-1 rounded-lg bg-pulse-orange/90 text-white font-medium">
+                  🔴 Live Now
+                </span>
+                {% elif event.is_past %}
+                <span class="inline-flex items-center px-2 py-1 rounded-lg bg-pulse-blue/60 text-white font-medium">
+                  Past Event
+                </span>
+                  {% else %}
+                  <span class="inline-flex items-center px-2 py-1 rounded-lg bg-pulse-blue/90 text-white font-medium">
+                    Upcoming
+                  </span>
+                  {% endif %}
+
+                  <!-- Debug Info on Card -->
+                  <div class="mt-2 p-2 bg-black/40 rounded text-[10px] text-yellow-200/80 font-mono space-y-0.5">
+                    <div>Date: {{ event.event_date|default:"None" }}</div>
+                    <div>Start: {% if event.start_datetime %}{{ event.start_datetime|date:"M d, Y H:i" }}{% else %}None{% endif %}</div>
+                    <div>End: {% if event.end_datetime %}{{ event.end_datetime|date:"M d, Y H:i" }}{% else %}None{% endif %}</div>
+                    <div>Now (server): {{ now|date:"M d, Y H:i" }} ({{ now|date:"T" }})</div>
+                    <div>Ongoing: {{ event.is_ongoing|yesno:"Yes,No" }} | Past: {{ event.is_past|yesno:"Yes,No" }} | Upcoming: {{ event.is_upcoming|yesno:"Yes,No" }}</div>
+                  </div>
+
+                  <!-- Mandatory/Optional -->
+                  {% if event.is_mandatory %}
+                  <span class="inline-flex items-center px-2 py-1 rounded-lg bg-pulse-orange/80 text-white font-medium">
+                    Required
+                  </span>
+                  {% endif %}
+
+                  <!-- Date & Time -->
+                  <span class="inline-flex items-center text-white/90">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                      </path>
+                    </svg>
+                    {{ event.start_datetime|date:"M d" }} • {{ event.start_datetime|date:"g:i A" }}
+                  </span>
+
+                  <!-- Venue -->
+                  {% if event.venue %}
+                  <span class="inline-flex items-center text-white/90">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    {{ event.venue|truncatewords:3 }}
+                  </span>
+                  {% endif %}
+
+                  <!-- Points -->
+                  <span class="inline-flex items-center text-white font-semibold ml-auto">
+                    <svg class="w-3.5 h-3.5 mr-1 text-pulse-orange" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z">
+                      </path>
+                    </svg>
+                    {{ event.get_points }} pts
+                  </span>
+
+                  <!-- Capacity -->
+                  {% if event.capacity %}
+                  <span class="inline-flex items-center text-white/90">
+                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                      </path>
+                    </svg>
+                    {{ event.registered_count }}/{{ event.capacity }}
+                  </span>
+                  {% endif %}
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="mt-12 flex justify-center animate-fade-in-up">
+      <nav class="flex items-center gap-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}"
+          class="px-4 py-2 border border-pulse-blue/20 rounded-pulse text-white hover:bg-pulse-navyLighter transition-colors">
+          Previous
+        </a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="px-4 py-2 bg-pulse-gradient text-white rounded-pulse shadow-pulse-sm">{{ num }}</span>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <a href="?page={{ num }}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}"
+          class="px-4 py-2 border border-pulse-blue/20 rounded-pulse text-white hover:bg-pulse-navyLighter transition-colors">
+          {{ num }}
+        </a>
+        {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}"
+            class="px-4 py-2 border border-pulse-blue/20 rounded-pulse text-white hover:bg-pulse-navyLighter transition-colors">
+            Next
+          </a>
+          {% endif %}
+      </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-16 animate-fade-in-up">
+      <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-pulse-gradient flex items-center justify-center shadow-pulse">
+        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+      </div>
+      <h3 class="text-2xl font-bold text-white mb-2">No events found</h3>
+      <p class="text-text-muted mb-6">Get started by creating a new event!</p>
+      {% if user.is_authenticated %}
+      {% if user.is_superuser or user.profile and user.profile.is_admin %}
+      <a href="{% url 'event-create' %}"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-pulse-gradient text-white rounded-pulse font-semibold shadow-pulse hover:opacity-90 transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Create First Event
+      </a>
+      {% endif %}
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

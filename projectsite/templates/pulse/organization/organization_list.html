@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Organizations - Pulse{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8 animate-fadeIn">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 class="text-4xl md:text-5xl font-display font-extrabold pulse-gradient-text">
+            Organizations
+          </h1>
+          <p class="text-text-muted mt-2">Manage organizations and assign organizers</p>
+          {% if pending_count > 0 %}
+          <a href="{% url 'organization-list' %}?status=PENDING" class="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-pulse-orange/20 border border-pulse-orange/30 rounded-pulse hover:bg-pulse-orange/30 transition-colors cursor-pointer">
+            <svg class="w-5 h-5 text-pulse-orange" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+            </svg>
+            <span class="text-sm font-medium text-pulse-orange">{{ pending_count }} pending request{{ pending_count|pluralize }} awaiting review - Click to view</span>
+          </a>
+          {% endif %}
+        </div>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+          <a href="{% url 'organization-create-admin' %}"
+             class="inline-flex justify-center items-center px-6 py-3 bg-pulse-gradient text-white rounded-pulse font-semibold shadow-pulse hover:opacity-90 transition-all transform hover:scale-105">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Create Organization
+          </a>
+          <div class="p-3 bg-pulse-gradient rounded-pulse shadow-pulse">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="bg-pulse-navyLight rounded-pulse shadow-pulse border border-pulse-blue/20 p-6 mb-6 animate-slideUp">
+      <form method="get" class="flex flex-col md:flex-row gap-4">
+        <div class="flex-1">
+          <label for="search" class="block text-sm font-medium text-white mb-2">Search Organizations</label>
+          <div class="relative">
+            <input type="text" name="search" id="search" value="{{ request.GET.search }}" 
+                   placeholder="Search by name, description, or join code..."
+                   class="w-full px-4 py-2 pl-10 border border-pulse-blue/20 rounded-pulse focus:ring-2 focus:ring-pulse-blue focus:border-pulse-blue bg-pulse-navyLighter text-white">
+            <svg class="absolute left-3 top-3 w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="md:w-48">
+          <label for="status" class="block text-sm font-medium text-white mb-2">Status</label>
+          <select name="status" id="status" class="w-full px-4 py-2 border border-pulse-blue/20 rounded-pulse focus:ring-2 focus:ring-pulse-blue focus:border-pulse-blue bg-pulse-navyLighter text-white">
+            <option value="all" {% if current_status == 'all' %}selected{% endif %}>All Status</option>
+            <option value="PENDING" {% if current_status == 'PENDING' %}selected{% endif %}>Pending</option>
+            <option value="APPROVED" {% if current_status == 'APPROVED' %}selected{% endif %}>Approved</option>
+            <option value="REJECTED" {% if current_status == 'REJECTED' %}selected{% endif %}>Rejected</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button type="submit" class="px-6 py-2 bg-pulse-gradient text-white rounded-pulse hover:opacity-90 transition-colors font-medium shadow-pulse-sm">
+            Search
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Organizations List -->
+    {% if organizations %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for org in organizations %}
+      <div class="bg-pulse-navyLight rounded-pulse shadow-pulse border border-pulse-blue/20 overflow-hidden hover:shadow-pulse-lg transition-all transform hover:-translate-y-1 animate-fadeIn">
+        <div class="p-6">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex-1">
+              <h3 class="text-xl font-bold text-white mb-2">{{ org.name }}</h3>
+              {% if org.description %}
+              <p class="text-sm text-text-secondary line-clamp-2">{{ org.description }}</p>
+              {% endif %}
+            </div>
+            <div class="flex flex-col gap-1 items-end">
+              {% if org.status == 'PENDING' %}
+              <span class="px-3 py-1 bg-pulse-orange/20 text-pulse-orange text-xs font-semibold rounded-full border border-pulse-orange/30">
+                Pending
+              </span>
+              {% elif org.status == 'APPROVED' %}
+              <span class="px-3 py-1 bg-pulse-blue/20 text-pulse-blue text-xs font-semibold rounded-full border border-pulse-blue/30">
+                Approved
+              </span>
+              {% elif org.status == 'REJECTED' %}
+              <span class="px-3 py-1 bg-pulse-orange/20 text-pulse-orange text-xs font-semibold rounded-full border border-pulse-orange/30">
+                Rejected
+              </span>
+              {% endif %}
+              {% if org.is_active %}
+              <span class="px-3 py-1 bg-pulse-blue/20 text-pulse-blue text-xs font-semibold rounded-full border border-pulse-blue/30">
+                Active
+              </span>
+              {% else %}
+              <span class="px-3 py-1 bg-pulse-blue/20 text-text-muted text-xs font-semibold rounded-full border border-pulse-blue/30">
+                Inactive
+              </span>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="space-y-2 mb-4">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-text-muted">Join Code:</span>
+              <span class="font-mono font-semibold text-white">{{ org.join_code }}</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-text-muted">Members:</span>
+              <span class="font-semibold text-white">{{ org.get_member_count }}</span>
+            </div>
+            {% if org.created_by %}
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-text-muted">Created by:</span>
+              <span class="font-medium text-white">{{ org.created_by.get_full_name|default:org.created_by.username }}</span>
+            </div>
+            {% endif %}
+          </div>
+          
+          <div class="flex items-center gap-2 pt-4 border-t border-pulse-blue/20">
+            <a href="{% url 'organization-detail' org.pk %}"
+               class="flex-1 px-4 py-2 bg-pulse-blue/20 text-pulse-blue rounded-pulse hover:bg-pulse-blue/30 transition-colors text-center font-medium text-sm border border-pulse-blue/30">
+              View Details
+            </a>
+            {% if org.status == 'PENDING' %}
+            <a href="{% url 'organization-detail' org.pk %}"
+               class="px-4 py-2 bg-pulse-orange/20 text-pulse-orange rounded-pulse hover:bg-pulse-orange/30 transition-colors text-center font-medium text-sm border border-pulse-orange/30">
+              Review
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="mt-8 flex items-center justify-center">
+      <nav class="flex items-center gap-2">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+           class="px-4 py-2 bg-pulse-navyLight rounded-pulse shadow-pulse-sm border border-pulse-blue/20 hover:bg-pulse-navyLighter transition-colors text-white">
+          Previous
+        </a>
+        {% endif %}
+        
+        <span class="px-4 py-2 bg-pulse-gradient text-white rounded-pulse shadow-pulse-sm">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}"
+           class="px-4 py-2 bg-pulse-navyLight rounded-pulse shadow-pulse-sm border border-pulse-blue/20 hover:bg-pulse-navyLighter transition-colors text-white">
+          Next
+        </a>
+        {% endif %}
+      </nav>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="bg-pulse-navyLight rounded-pulse shadow-pulse border border-pulse-blue/20 p-12 text-center animate-fadeIn">
+      <svg class="w-16 h-16 text-text-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+      </svg>
+      <h3 class="text-xl font-semibold text-white mb-2">No organizations found</h3>
+      <p class="text-text-muted mb-6">Get started by creating your first organization.</p>
+      <a href="{% url 'organization-create' %}"
+         class="inline-flex items-center px-6 py-3 bg-pulse-gradient text-white rounded-pulse font-semibold shadow-pulse hover:opacity-90 transition-all">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Create Organization
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

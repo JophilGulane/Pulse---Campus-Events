@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load auth_helpers %}
+
+{% block title %}Review Excuses - Pulse{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8 animate-fadeIn">
+      <a href="{% url 'organizer-dashboard' %}" 
+         class="inline-flex items-center text-pulse-blue hover:text-pulse-blue/80 font-medium mb-4 transition-colors group">
+        <svg class="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to Dashboard
+      </a>
+      
+      <div class="flex items-center gap-4 mb-2">
+        <div class="p-3 bg-pulse-gradient rounded-pulse-lg shadow-pulse-sm">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-4xl md:text-5xl font-display font-extrabold pulse-gradient-text">
+            Review Excuses
+          </h1>
+          <p class="text-text-secondary mt-1">{{ total_pending }} pending excuse{{ total_pending|pluralize }} awaiting review</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Excuses List -->
+    <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse overflow-hidden animate-slideUp border border-pulse-blue/20">
+      {% if excuses %}
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-pulse-blue/20">
+            <thead class="bg-pulse-navyLighter">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Student</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Event</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Attendance Type</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Reason</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Proof</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Requested</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-text-secondary uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="bg-pulse-navy divide-y divide-pulse-blue/20">
+              {% for excuse in excuses %}
+              <tr class="hover:bg-pulse-navyLighter transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-pulse-gradient flex items-center justify-center text-white font-semibold shadow-pulse-sm">
+                      {{ excuse.user|get_initials }}
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-white">
+                        {{ excuse.user|get_display_name }}
+                      </div>
+                      <div class="text-sm text-text-muted">@{{ excuse.user.username }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm font-medium text-white">{{ excuse.event.title }}</div>
+                  <div class="text-sm text-text-muted">{{ excuse.event.start_datetime|date:"M d, Y" }}</div>
+                  {% if excuse.event.organization %}
+                  <div class="text-xs text-text-muted">{{ excuse.event.organization.name }}</div>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-pulse-full text-xs font-medium bg-pulse-blue/20 text-pulse-blue border border-pulse-blue/30">
+                    {{ excuse.get_attendance_type_label }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-sm text-white max-w-xs truncate">{{ excuse.reason|truncatewords:15 }}</div>
+                </td>
+                <td class="px-6 py-4">
+                  {% if excuse.proof_link %}
+                  <a href="{{ excuse.proof_link }}" target="_blank" rel="noopener noreferrer" 
+                     class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-pulse-blue bg-pulse-blue/20 hover:bg-pulse-blue/30 rounded-pulse transition-colors border border-pulse-blue/30">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                    </svg>
+                    View Proof
+                  </a>
+                  {% else %}
+                  <span class="text-xs text-text-muted italic">No proof</span>
+                  {% endif %}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-text-muted">
+                  {{ excuse.created_at|naturaltime }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                  <a href="{% url 'review-excuse-detail' excuse.pk %}" 
+                     class="inline-flex items-center px-4 py-2 bg-pulse-gradient text-white text-sm font-semibold rounded-pulse hover:opacity-90 transition-all shadow-pulse-sm hover:shadow-pulse">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    Review
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="bg-pulse-navyLighter px-6 py-4 border-t border-pulse-blue/20 flex items-center justify-between">
+          <div class="text-sm text-text-secondary">
+            Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+          </div>
+          <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-pulse-navyLight border border-pulse-blue/30 rounded-pulse text-sm font-medium text-white hover:bg-pulse-navyLighter/80">
+              Previous
+            </a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-pulse-navyLight border border-pulse-blue/30 rounded-pulse text-sm font-medium text-white hover:bg-pulse-navyLighter/80">
+              Next
+            </a>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+      {% else %}
+        <div class="text-center py-16">
+          <svg class="w-24 h-24 text-text-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <h3 class="text-xl font-semibold text-white mb-2">No Pending Excuses</h3>
+          <p class="text-text-muted">All excuse requests have been reviewed.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+

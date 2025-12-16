@@ -1,0 +1,2621 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load auth_helpers %}
+
+{% block title %}QR Code Scanner - Pulse{% endblock %}
+
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@latest/dist/html5-qrcode.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy py-4 sm:py-6 lg:py-8 overflow-x-hidden">
+  <div class="max-w-6xl mx-auto px-3 sm:px-4 lg:px-8">
+    <!-- Header -->
+    <div class="mb-4 sm:mb-6 lg:mb-8 animate-fadeIn">
+      <div class="flex items-center justify-between flex-wrap gap-3 sm:gap-4">
+        <div class="flex items-center gap-2 sm:gap-3 lg:gap-4">
+          <div class="p-2 sm:p-2.5 lg:p-3 bg-pulse-gradient rounded-pulse shadow-pulse-sm flex-shrink-0">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-white" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z">
+              </path>
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-display font-extrabold pulse-gradient-text">
+              QR Code Scanner
+            </h1>
+            <p class="text-xs sm:text-sm text-text-muted mt-1 sm:mt-2">Scan member QR codes for event attendance</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile-First Event & Attendance Type Selection -->
+    <div class="mb-4 sm:mb-6 lg:hidden">
+      <div class="flex flex-col sm:flex-row gap-3">
+        <!-- Event Selection Dropdown (Mobile) -->
+        <div class="flex-1 bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm border border-pulse-blue/20 p-4">
+          <label class="block text-sm font-semibold text-white mb-2 flex items-center gap-2">
+            <svg class="w-4 h-4 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            Select Event
+          </label>
+          <select id="event-select-mobile"
+            class="w-full px-4 py-3 border border-pulse-blue/20 rounded-pulse focus:ring-2 focus:ring-pulse-blue focus:border-pulse-blue text-sm bg-pulse-navyLighter text-white">
+            <option value="">-- Choose an event --</option>
+            {% for item in events_with_types %}
+            {% if item.event.can_scan_attendance %}
+            <option value="{{ item.event.id }}" data-title="{{ item.event.title|escapejs }}"
+              data-types="{{ item.available_types|length }}" data-active="true">
+              {{ item.event.title }} -
+              {% if item.event.event_date %}
+              {{ item.event.event_date|date:"M d, Y" }}
+              {% elif item.event.start_datetime %}
+              {{ item.event.start_datetime|date:"M d, Y g:i A" }}
+              {% endif %}
+            </option>
+            {% else %}
+            <option value="{{ item.event.id }}" data-title="{{ item.event.title|escapejs }}"
+              data-types="{{ item.available_types|length }}">
+              {{ item.event.title }} -
+              {% if item.event.event_date %}
+              {{ item.event.event_date|date:"M d, Y" }}
+              {% elif item.event.start_datetime %}
+              {{ item.event.start_datetime|date:"M d, Y g:i A" }}
+              {% endif %}
+            </option>
+            {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Attendance Type Selection (Mobile) -->
+        <div id="attendance-type-selector-mobile"
+          class="flex-1 hidden bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm border border-pulse-blue/20 p-4">
+          <label class="block text-sm font-semibold text-white mb-2 flex items-center gap-2">
+            <svg class="w-4 h-4 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+              </path>
+            </svg>
+            Select Attendance Type
+          </label>
+          <select id="attendance-type-dropdown-mobile"
+            class="w-full px-4 py-3 border border-pulse-blue/20 rounded-pulse focus:ring-2 focus:ring-pulse-blue focus:border-pulse-blue text-sm bg-pulse-navyLighter text-white">
+            <option value="">-- Select attendance type --</option>
+          </select>
+          <div id="time-window-info-mobile"
+            class="mt-3 p-3 bg-pulse-blue/20 border border-pulse-blue/30 rounded-pulse hidden">
+            <div class="flex items-start gap-2">
+              <svg class="w-4 h-4 text-pulse-blue mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <div>
+                <p class="text-xs font-semibold text-pulse-blue">Available Time Window</p>
+                <p id="time-window-text-mobile" class="text-xs text-text-secondary mt-1"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+      <!-- Event Selection (Desktop) -->
+      <div class="hidden lg:block lg:col-span-1">
+        <div
+          class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm border border-pulse-blue/20 p-4 lg:p-6 sticky top-3 sm:top-4">
+          <h2 class="text-lg sm:text-xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-1.5 sm:gap-2">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            Select Event
+          </h2>
+
+          <div class="space-y-2 sm:space-y-3 max-h-[300px] sm:max-h-96 overflow-y-auto">
+            {% for item in events_with_types %}
+            {% with event=item.event available_types=item.available_types %}
+            <button onclick="selectEvent({{ event.id }}, '{{ event.title|escapejs }}', {{ available_types|length }})"
+              class="w-full text-left p-2.5 sm:p-3 lg:p-4 rounded-pulse border-2 transition-all event-btn {% if event.can_scan_attendance %}border-pulse-orange bg-pulse-orange/10 hover:bg-pulse-orange/20{% else %}border-pulse-blue/20 hover:border-pulse-blue/40 bg-pulse-navyLighter/50{% endif %}"
+              data-event-id="{{ event.id }}">
+              <div class="font-semibold text-white mb-0.5 sm:mb-1 text-sm sm:text-base line-clamp-2">{{ event.title }}
+              </div>
+              <div class="text-xs sm:text-sm text-text-muted mb-1.5 sm:mb-2">
+                {% if event.event_date %}
+                {{ event.event_date|date:"F d, Y" }}
+                {% elif event.start_datetime %}
+                {{ event.start_datetime|date:"F d, Y" }} {{ event.start_datetime|date:"g:i A" }}
+                {% endif %}
+              </div>
+              {% if event.organization %}
+              <span
+                class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-pulse-purple/20 text-pulse-purple border border-pulse-purple/30 mb-1.5 sm:mb-2 whitespace-nowrap">
+                {{ event.organization.name }}
+              </span>
+              {% endif %}
+              {% if available_types %}
+              <div class="mt-1.5 sm:mt-2 flex flex-wrap gap-1">
+                {% for type in available_types %}
+                {% if type.value == "MORNING_IN" %}
+                <span
+                  class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-pulse-blue/20 text-pulse-blue border border-pulse-blue/30 whitespace-nowrap overflow-visible"
+                  style="min-width: fit-content;" title="Morning Time In">
+                  <span class="hidden sm:inline">Morning Time In</span>
+                  <span class="sm:hidden">M In</span>
+                </span>
+                {% elif type.value == "MORNING_OUT" %}
+                <span
+                  class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-pulse-blue/20 text-pulse-blue border border-pulse-blue/30 whitespace-nowrap overflow-visible"
+                  style="min-width: fit-content;" title="Morning Time Out">
+                  <span class="hidden sm:inline">Morning Time Out</span>
+                  <span class="sm:hidden">M Out</span>
+                </span>
+                {% elif type.value == "AFTERNOON_IN" %}
+                <span
+                  class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-pulse-blue/20 text-pulse-blue border border-pulse-blue/30 whitespace-nowrap overflow-visible"
+                  style="min-width: fit-content;" title="Afternoon Time In">
+                  <span class="hidden sm:inline">Afternoon Time In</span>
+                  <span class="sm:hidden">A In</span>
+                </span>
+                {% elif type.value == "AFTERNOON_OUT" %}
+                <span
+                  class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-pulse-blue/20 text-pulse-blue border border-pulse-blue/30 whitespace-nowrap overflow-visible"
+                  style="min-width: fit-content;" title="Afternoon Time Out">
+                  <span class="hidden sm:inline">Afternoon Time Out</span>
+                  <span class="sm:hidden">A Out</span>
+                </span>
+                {% else %}
+                {# Fallback for any unknown types - should not happen #}
+                <span
+                  class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-pulse-blue/20 text-pulse-blue border border-pulse-blue/30 whitespace-nowrap overflow-visible"
+                  style="min-width: fit-content;" title="Unknown Attendance Type">
+                  {{ type.value|default:"Unknown" }}
+                </span>
+                {% endif %}
+                {% endfor %}
+              </div>
+              {% endif %}
+              <div class="mt-1.5 sm:mt-2 flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                {% if event.is_ongoing %}
+                <span
+                  class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-semibold bg-pulse-orange/20 text-pulse-orange border border-pulse-orange/30 whitespace-nowrap">
+                  🔴 Live Now
+                </span>
+                {% elif event.is_past %}
+                <span
+                  class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-semibold bg-pulse-navyLighter text-text-muted border border-pulse-blue/20 whitespace-nowrap">
+                  📅 Past Event
+                </span>
+                {% else %}
+                <span
+                  class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-semibold bg-pulse-blue/20 text-pulse-blue border border-pulse-blue/30 whitespace-nowrap">
+                  📅 Upcoming
+                </span>
+                {% endif %}
+                {% if event.can_scan_attendance %}
+                <span
+                  class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-pulse-orange/20 text-pulse-orange border border-pulse-orange/30 whitespace-nowrap">
+                  <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5 sm:mr-1 flex-shrink-0" fill="currentColor"
+                    viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd"></path>
+                  </svg>
+                  Active
+                </span>
+                {% else %}
+                <span
+                  class="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-pulse-navyLighter text-text-muted border border-pulse-blue/20 whitespace-nowrap">
+                  Not Available
+                </span>
+                {% endif %}
+              </div>
+            </button>
+            {% endwith %}
+            {% empty %}
+            <p class="text-text-muted text-center py-3 sm:py-4 text-xs sm:text-sm">No events available for scanning</p>
+            {% endfor %}
+          </div>
+
+          <!-- Attendance Type Selector -->
+          <div id="attendance-type-selector" class="hidden mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-pulse-blue/20">
+            <h3 class="text-base sm:text-lg font-bold text-white mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                </path>
+              </svg>
+              Select Attendance Type
+            </h3>
+            <select id="attendance-type-dropdown"
+              class="w-full px-3 sm:px-4 py-2 sm:py-2.5 lg:py-3 border border-pulse-blue/20 rounded-pulse focus:ring-2 focus:ring-pulse-blue focus:border-pulse-blue text-xs sm:text-sm bg-pulse-navyLighter text-white">
+              <option value="">-- Select attendance type --</option>
+            </select>
+            <div id="time-window-info"
+              class="mt-2 sm:mt-3 p-2.5 sm:p-3 bg-pulse-blue/20 border border-pulse-blue/30 rounded-pulse hidden">
+              <div class="flex items-start gap-1.5 sm:gap-2">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-blue mt-0.5 flex-shrink-0" fill="none"
+                  stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                  <p class="text-xs sm:text-sm font-semibold text-pulse-blue">Available Time Window</p>
+                  <p id="time-window-text" class="text-xs sm:text-sm text-text-secondary mt-0.5 sm:mt-1"></p>
+                </div>
+              </div>
+            </div>
+            <p class="text-[10px] sm:text-xs text-text-muted mt-1.5 sm:mt-2">Time windows show when each scan type is
+              available. Unavailable
+              options are disabled.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scanner Area -->
+      <div class="lg:col-span-2 order-1 lg:order-2">
+        <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm border border-pulse-blue/20 p-3 sm:p-4 lg:p-6">
+          <!-- Current Event Info (Desktop) -->
+          <div id="current-event-info"
+            class="hidden lg:block mb-4 sm:mb-6 p-3 sm:p-4 bg-pulse-orange/20 rounded-pulse border border-pulse-orange/30">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+              <div class="min-w-0 flex-1">
+                <h3 class="font-semibold text-pulse-orange text-sm sm:text-base" id="current-event-title"></h3>
+                <p class="text-xs sm:text-sm text-text-secondary" id="current-event-time"></p>
+              </div>
+              <button onclick="stopScanner()"
+                class="px-3 sm:px-4 py-1.5 sm:py-2 bg-pulse-orange text-white rounded-pulse hover:opacity-90 transition-colors text-xs sm:text-sm font-medium shadow-pulse-sm whitespace-nowrap">
+                Stop Scanning
+              </button>
+            </div>
+          </div>
+
+          <div id="scanner-container" class="mb-4 sm:mb-6">
+            <div class="relative">
+              <div id="qr-reader" class="w-full bg-pulse-navyLighter rounded-pulse overflow-hidden"></div>
+              <!-- Scanning Overlay -->
+              <div id="scanning-overlay"
+                class="hidden absolute inset-0 bg-black bg-opacity-50 rounded-pulse flex items-center justify-center">
+                <div class="text-center text-white">
+                  <svg class="animate-spin h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 mx-auto mb-2 sm:mb-4"
+                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                    </path>
+                  </svg>
+                  <p class="text-sm sm:text-base lg:text-lg font-semibold">Scanning...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Current Event Info (Mobile) - Below Scanner -->
+            <div id="current-event-info-mobile"
+              class="lg:hidden mt-4 p-3 bg-pulse-orange/20 rounded-pulse border border-pulse-orange/30">
+              <div class="flex flex-col gap-2">
+                <div class="min-w-0 flex-1">
+                  <h3 class="font-semibold text-pulse-orange text-sm" id="current-event-title-mobile"></h3>
+                  <p class="text-xs text-text-secondary" id="current-event-time-mobile"></p>
+                </div>
+                <button onclick="stopScanner()"
+                  class="w-full px-3 py-1.5 bg-pulse-orange text-white rounded-pulse hover:opacity-90 transition-colors text-xs font-medium shadow-pulse-sm">
+                  Stop
+                </button>
+              </div>
+            </div>
+
+            <div id="scanner-status" class="mt-3 sm:mt-4 text-center">
+              <div
+                class="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-pulse-navyLighter rounded-full border border-pulse-blue/20">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-xs sm:text-sm text-text-muted">Select an event to start scanning</p>
+              </div>
+            </div>
+            <div id="secure-context-alert" class="hidden mt-3 sm:mt-4">
+              <div
+                class="bg-pulse-orange/20 border border-pulse-orange/40 rounded-pulse p-3 sm:p-4 text-xs sm:text-sm text-pulse-orange">
+                <p class="font-semibold mb-1 text-xs sm:text-sm">HTTPS Required for Camera Access</p>
+                <p class="text-[11px] sm:text-xs">Mobile browsers block camera access on insecure (HTTP) pages. Please
+                  open this page using
+                  <span class="font-semibold">https://</span> (ngrok, production domain, or localhost). You can still
+                  upload a QR image using the fallback uploader below.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div id="qr-file-reader" class="hidden"></div>
+
+          <!-- Manual Token Entry (for testing) -->
+          <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-pulse-orange/20 border border-pulse-orange/40 rounded-pulse">
+            <details class="cursor-pointer">
+              <summary class="text-xs sm:text-sm font-semibold text-pulse-orange flex items-center gap-1.5 sm:gap-2">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+                  </path>
+                </svg>
+                Test Mode: Manually Enter Token
+              </summary>
+              <div class="mt-2 sm:mt-3 space-y-2">
+                <p class="text-[10px] sm:text-xs text-text-secondary">If scanning isn't working, you can manually test
+                  by entering a QR
+                  code token:</p>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input type="text" id="manual-token-input" placeholder="Enter QR token here..."
+                    class="flex-1 px-2.5 sm:px-3 py-1.5 sm:py-2 border border-pulse-orange/40 rounded-pulse text-xs sm:text-sm bg-pulse-navyLighter text-white focus:ring-2 focus:ring-pulse-orange focus:border-pulse-orange">
+                  <button onclick="testManualToken()"
+                    class="px-3 sm:px-4 py-1.5 sm:py-2 bg-pulse-orange text-white rounded-pulse hover:opacity-90 text-xs sm:text-sm font-medium shadow-pulse-sm whitespace-nowrap">
+                    Test Token
+                  </button>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Mobile / No-camera fallback -->
+          <div class="mb-4 sm:mb-6 p-3 sm:p-4 bg-pulse-blue/20 border border-pulse-blue/30 rounded-pulse">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+              <div class="min-w-0 flex-1">
+                <p class="text-xs sm:text-sm font-semibold text-pulse-blue">No camera access?</p>
+                <p class="text-[10px] sm:text-xs text-text-secondary">Upload a screenshot or photo of the QR code and
+                  we'll scan it for
+                  you.
+                </p>
+              </div>
+              <label for="qr-file-input"
+                class="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-pulse-blue text-white rounded-pulse cursor-pointer hover:opacity-90 text-xs sm:text-sm font-medium shadow-pulse-sm whitespace-nowrap">
+                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M8 12l4 4 4-4m-4-4v8"></path>
+                </svg>
+                Upload QR Image
+              </label>
+              <input id="qr-file-input" type="file" accept="image/*" capture="environment" class="hidden">
+            </div>
+            <p class="text-[0.65rem] sm:text-[0.7rem] text-pulse-blue mt-1.5 sm:mt-2">Tip: keep the QR code centered,
+              sharp, and well-lit for faster
+              detection.</p>
+          </div>
+
+          <!-- Results Area -->
+          <div id="scan-results" class="hidden mb-4 sm:mb-6">
+            <div class="bg-pulse-navyLighter rounded-pulse p-4 sm:p-6 border-2 border-pulse-blue/20">
+              <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 class="text-base sm:text-lg font-semibold text-white">Scan Results</h3>
+                <button onclick="closeResults()" class="text-text-muted hover:text-white flex-shrink-0">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                  </svg>
+                </button>
+              </div>
+              <div id="result-message" class="text-sm sm:text-base"></div>
+            </div>
+          </div>
+
+          <!-- Recent Scans -->
+          <div id="recent-scans" class="hidden">
+            <h3 class="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Recent Scans</h3>
+            <div id="recent-scans-list" class="space-y-2 max-h-32 sm:max-h-48 overflow-y-auto">
+              <!-- Recent scans will be added here -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  #qr-reader {
+    min-height: 300px;
+    width: 100%;
+    position: relative;
+  }
+
+  /* Mobile-specific styles */
+  @media (max-width: 768px) {
+    #qr-reader {
+      min-height: 400px;
+    }
+
+    #qr-reader video {
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    #qr-reader__scan_region {
+      border-radius: 0.75rem;
+    }
+  }
+
+  #qr-reader__dashboard_section {
+    margin-top: 1rem;
+  }
+
+  /* Ensure scanner container is visible on mobile */
+  #qr-reader__camera_selection {
+    margin-bottom: 1rem;
+  }
+
+  /* Fix QR shaded region overflow and make it square */
+  #qr-reader__shaded_region {
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0.75rem !important;
+    position: relative !important;
+  }
+
+  /* Force square aspect ratio for shaded region using padding trick */
+  #qr-reader__shaded_region::before {
+    content: "" !important;
+    display: block !important;
+    padding-bottom: 100% !important;
+  }
+
+  #qr-reader__shaded_region>* {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Make the scan region square */
+  #qr-reader__scan_region {
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0.75rem !important;
+    position: relative !important;
+  }
+
+  /* Force square aspect ratio using padding trick */
+  #qr-reader__scan_region::before {
+    content: "" !important;
+    display: block !important;
+    padding-bottom: 100% !important;
+  }
+
+  #qr-reader__scan_region>* {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  #qr-reader__scan_region video {
+    object-fit: contain !important;
+  }
+
+  /* Ensure the scanner container doesn't overflow */
+  #qr-reader {
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  #qr-reader>div {
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+</style>
+
+<script>
+  // Events data from server
+  const eventsData = {{ events_data_json| safe }};
+  console.log('📊 Events data loaded:', eventsData ? Object.keys(eventsData).length + ' events' : 'NO DATA');
+  console.log('📊 Events data keys:', eventsData ? Object.keys(eventsData) : 'N/A');
+
+  let html5QrcodeScanner = null;
+  let currentEventId = null;
+  let currentAttendanceType = null;
+  let isScanning = false;
+
+  let recentScans = [];
+  let currentEventTitle = '';
+  const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  const isSecureOrigin = window.isSecureContext || window.location.protocol === 'https:' || isLocalhost;
+  let availableCameras = [];
+  let preferredCameraId = null;
+
+  // Helper function to check if attendance type is currently available
+  // This function can be called with either a type object or an end_time string
+  // MUST be in global scope so it can be accessed by event handlers and periodic checks
+  // Uses LOCAL TIME for all comparisons
+  function isCurrentlyAvailable(type) {
+    let endTimeStr = null;
+
+    // Handle both type object and end_time string
+    if (typeof type === 'string') {
+      endTimeStr = type;
+    } else if (type && type.end_time) {
+      endTimeStr = type.end_time;
+    }
+
+    // PRIMARY CHECK: Always verify end_time with browser LOCAL time (MOST IMPORTANT)
+    if (endTimeStr) {
+      try {
+        // Get current LOCAL time
+        const now = new Date();
+
+        // Parse the end_time - backend sends ISO format like "2025-11-30T10:50:00+00:00"
+        // Extract just the date/time part (YYYY-MM-DDTHH:mm:ss) and treat it as LOCAL time
+        let dateTimePart = endTimeStr.trim();
+
+        // Remove timezone info if present (everything after +, -, or Z)
+        if (dateTimePart.includes('+')) {
+          dateTimePart = dateTimePart.split('+')[0];
+        } else if (dateTimePart.includes('Z')) {
+          dateTimePart = dateTimePart.split('Z')[0];
+        } else if (dateTimePart.match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-\d{2}:\d{2}$/)) {
+          // Has timezone like -08:00, remove it
+          dateTimePart = dateTimePart.replace(/-\d{2}:\d{2}$/, '');
+        }
+
+        // Parse the date/time components
+        const [datePart, timePart] = dateTimePart.split('T');
+        const [year, month, day] = datePart.split('-').map(Number);
+        const [hours, minutes, seconds = 0] = (timePart || '00:00:00').split(':').map(Number);
+
+        // Create end time as LOCAL time (not UTC)
+        const endTimeLocal = new Date(year, month - 1, day, hours, minutes, seconds || 0, 0);
+
+        // Verify the date was created correctly
+        if (isNaN(endTimeLocal.getTime())) {
+          console.warn('Could not parse end_time:', endTimeStr, 'Parsed as:', dateTimePart);
+          return false;
+        }
+
+        // Get current time components in local timezone
+        const currentTime = now.getTime();
+        const endTime = endTimeLocal.getTime();
+
+        // Compare timestamps (both are in local timezone context)
+        if (currentTime >= endTime) {
+          // End time has passed - not available
+          const endLocalStr = endTimeLocal.toLocaleString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          });
+          const currentLocalStr = now.toLocaleString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          });
+          console.log('Attendance type expired (local time comparison):',
+            'End time (local):', endLocalStr,
+            'Current (local):', currentLocalStr,
+            'End time parsed as:', `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`,
+            'Diff (ms):', currentTime - endTime);
+          return false;
+        }
+      } catch (e) {
+        console.error('Error parsing end_time:', endTimeStr, e);
+        // If we can't parse, be conservative and hide it
+        return false;
+      }
+    } else {
+      // If no end_time is provided, we can't verify - be conservative
+      // Only show if backend explicitly says it's enabled
+      if (type && type.enabled !== true) {
+        return false;
+      }
+    }
+
+    // SECONDARY CHECK: Verify enabled flag from backend (only if type is an object)
+    if (type && typeof type === 'object' && type.enabled !== true) {
+      return false;
+    }
+
+    return true;
+  }
+
+  // Make selectEvent globally accessible
+  window.selectEvent = function selectEvent(eventId, eventTitle, availableTypesCount) {
+    console.log('🎯 selectEvent() called with:', { eventId, eventTitle, availableTypesCount });
+    console.log('📦 eventsData available:', !!eventsData, 'Keys:', eventsData ? Object.keys(eventsData) : 'N/A');
+
+    if (!eventId) {
+      console.error('❌ No eventId provided to selectEvent');
+      return;
+    }
+
+    currentEventId = eventId;
+    currentEventTitle = eventTitle;
+    currentAttendanceType = null; // Reset attendance type
+
+    // Get available attendance types for this event
+    const availableTypes = eventsData[String(eventId)] || [];
+    console.log('📋 Available types for event:', availableTypes);
+
+    // Populate attendance type dropdown (Desktop)
+    const dropdown = document.getElementById('attendance-type-dropdown');
+    // Populate attendance type dropdown (Mobile)
+    const dropdownMobile = document.getElementById('attendance-type-dropdown-mobile');
+
+    // If no types at all from backend, show "No available" immediately
+    if (availableTypes.length === 0) {
+      console.warn('⚠️ No available types for this event');
+      if (dropdown) {
+        dropdown.innerHTML = '<option value="" disabled>No available attendance types</option>';
+        dropdown.disabled = true;
+      }
+      if (dropdownMobile) {
+        dropdownMobile.innerHTML = '<option value="" disabled>No available attendance</option>';
+        dropdownMobile.disabled = true;
+      }
+      // Show attendance type selector even if empty
+      const attendanceTypeSelector = document.getElementById('attendance-type-selector');
+      if (attendanceTypeSelector) {
+        attendanceTypeSelector.classList.remove('hidden');
+      }
+      const attendanceTypeSelectorMobile = document.getElementById('attendance-type-selector-mobile');
+      if (attendanceTypeSelectorMobile) {
+        attendanceTypeSelectorMobile.classList.remove('hidden');
+        attendanceTypeSelectorMobile.style.display = 'block';
+      }
+      // Clear time window info
+      const timeWindowInfo = document.getElementById('time-window-info');
+      const timeWindowInfoMobile = document.getElementById('time-window-info-mobile');
+      if (timeWindowInfo) {
+        timeWindowInfo.classList.add('hidden');
+      }
+      if (timeWindowInfoMobile) {
+        timeWindowInfoMobile.classList.add('hidden');
+      }
+      return;
+    }
+    // Define label mapping ONCE at the top - this ensures full names are ALWAYS used
+    // DO NOT rely on backend labels - they may be truncated or abbreviated
+    // This mapping handles all possible variations of the attendance type values
+    const labelMap = {
+      'MORNING_IN': 'Morning Time In',
+      'MORNING_OUT': 'Morning Time Out',
+      'AFTERNOON_IN': 'Afternoon Time In',
+      'AFTERNOON_OUT': 'Afternoon Time Out',
+      // Fallback for any single-letter abbreviations (shouldn't happen, but just in case)
+      'M': 'Morning Time In',
+      'O': 'Morning Time Out',
+      'A': 'Afternoon Time In',
+      'F': 'Afternoon Time Out'
+    };
+
+    // Clear and enable dropdowns (they might be disabled from previous "No available" state)
+    if (dropdown) {
+      dropdown.innerHTML = '<option value="">-- Select attendance type --</option>';
+      dropdown.disabled = false; // Ensure it's enabled
+    }
+    if (dropdownMobile) {
+      dropdownMobile.innerHTML = '<option value="">-- Select attendance type --</option>';
+      dropdownMobile.disabled = false; // Ensure it's enabled
+    }
+
+    // Clear time window info when selecting a new event
+    const timeWindowInfo = document.getElementById('time-window-info');
+    const timeWindowInfoMobile = document.getElementById('time-window-info-mobile');
+    if (timeWindowInfo) {
+      timeWindowInfo.classList.add('hidden');
+    }
+    if (timeWindowInfoMobile) {
+      timeWindowInfoMobile.classList.add('hidden');
+    }
+
+    // Value mapping to convert any abbreviated values to full values
+    // This handles cases where the backend might send "M" instead of "MORNING_IN"
+    const valueMap = {
+      'M': 'MORNING_IN',
+      'O': 'MORNING_OUT',
+      'A': 'AFTERNOON_IN',
+      'F': 'AFTERNOON_OUT',
+      'MORNING_IN': 'MORNING_IN',
+      'MORNING_OUT': 'MORNING_OUT',
+      'AFTERNOON_IN': 'AFTERNOON_IN',
+      'AFTERNOON_OUT': 'AFTERNOON_OUT'
+    };
+
+    // Track added values to prevent duplicates
+    const addedValues = new Set();
+
+    // Get current local time for filtering
+    const now = new Date();
+    const currentLocalTime = now.getTime();
+
+    // Debug: Log current time for troubleshooting
+    console.log('Current browser time:', now.toISOString(), 'Local:', now.toString());
+
+    // isCurrentlyAvailable is now defined in global scope above
+
+    availableTypes.forEach((type, index) => {
+      // CRITICAL: Map the value to ensure we always use full values
+      // Normalize the value first (trim whitespace, convert to uppercase)
+      const normalizedValue = String(type.value).trim().toUpperCase();
+      const mappedValue = valueMap[normalizedValue] || normalizedValue;
+
+      // Skip if we've already added this value (prevent duplicates)
+      if (addedValues.has(mappedValue)) {
+        return;
+      }
+
+      // ONLY SHOW TYPES THAT ARE CURRENTLY AVAILABLE (based on browser time)
+      const isAvailable = isCurrentlyAvailable(type);
+      if (!isAvailable) {
+        console.log('🚫 Filtering out unavailable/expired type:', mappedValue, 'End time:', type.end_time || 'N/A');
+        return; // Skip this type - it's not currently available
+      }
+      console.log('✅ Adding available type:', mappedValue, 'End time:', type.end_time || 'N/A');
+
+      // Mark this value as added
+      addedValues.add(mappedValue);
+
+      // Create option element only for available types
+      const option = document.createElement('option');
+
+      // Set the option value to the mapped (full) value
+      option.value = mappedValue;
+
+      // CRITICAL: ALWAYS use the mapping - NEVER use type.label from backend
+      // The backend might send abbreviated labels (like "O" or "M" instead of full names)
+      // So we completely ignore type.label and always use our mapping
+      let displayText = labelMap[mappedValue];
+
+      // If mapping doesn't exist, try to infer from the value or use backend label as last resort
+      if (!displayText) {
+        // Try to match partial strings
+        if (normalizedValue.includes('MORNING') && normalizedValue.includes('IN')) {
+          displayText = 'Morning Time In';
+        } else if (normalizedValue.includes('MORNING') && normalizedValue.includes('OUT')) {
+          displayText = 'Morning Time Out';
+        } else if (normalizedValue.includes('AFTERNOON') && normalizedValue.includes('IN')) {
+          displayText = 'Afternoon Time In';
+        } else if (normalizedValue.includes('AFTERNOON') && normalizedValue.includes('OUT')) {
+          displayText = 'Afternoon Time Out';
+        } else {
+          // Last resort: create readable name from value
+          displayText = normalizedValue.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+      }
+
+      // Add time window if available
+      if (type.time_window) {
+        displayText += ` (${type.time_window})`;
+      }
+
+      // CRITICAL: Set textContent directly - this is what the user sees
+      // We NEVER use type.label here - always use displayText from mapping
+      option.textContent = displayText;
+
+      // All options shown are enabled (we filter out unavailable ones above)
+      option.disabled = false;
+      option.dataset.timeWindow = type.time_window || '';
+      option.dataset.enabled = 'true'; // All shown options are enabled
+      option.dataset.endTime = type.end_time || ''; // Store end_time for real-time validation
+
+      // Add to desktop dropdown
+      if (dropdown) {
+        dropdown.appendChild(option.cloneNode(true));
+      }
+
+      // Add to mobile dropdown (clone again since we already used the original)
+      if (dropdownMobile) {
+        dropdownMobile.appendChild(option.cloneNode(true));
+      }
+
+      // Verify the option was set correctly (only if dropdown exists)
+      if (dropdown && dropdown.options.length > 0) {
+        const addedOption = dropdown.options[dropdown.options.length - 1];
+        if (addedOption.value !== mappedValue) {
+          // Option value mismatch - this should not happen
+        }
+      }
+    });
+
+    // Check how many available options we have (excluding placeholder)
+    // Count actual options in dropdown (excluding placeholder)
+    const desktopOptionsCount = dropdown ? dropdown.options.length - 1 : 0; // -1 for placeholder
+    const mobileOptionsCount = dropdownMobile ? dropdownMobile.options.length - 1 : 0; // -1 for placeholder
+    const availableOptionsCount = addedValues.size;
+    console.log('📊 Available attendance types count:', availableOptionsCount, 'Desktop options:', desktopOptionsCount, 'Mobile options:', mobileOptionsCount);
+
+    // Handle auto-selection or "No available" message
+    if (availableOptionsCount === 0) {
+      // No available types - replace with "No available" option and disable dropdowns
+      console.log('⚠️ No available attendance types for this event (after filtering)');
+
+      if (dropdown) {
+        dropdown.innerHTML = '<option value="" disabled selected>No available attendance types</option>';
+        dropdown.disabled = true;
+        console.log('✅ Desktop dropdown updated with "No available"');
+      } else {
+        console.warn('⚠️ Desktop dropdown not found!');
+      }
+
+      if (dropdownMobile) {
+        dropdownMobile.innerHTML = '<option value="" disabled selected>No available attendance types</option>';
+        dropdownMobile.disabled = true;
+        console.log('✅ Mobile dropdown updated with "No available"');
+      } else {
+        console.warn('⚠️ Mobile dropdown not found!');
+      }
+
+      // Ensure attendance type selector is visible even when empty
+      const attendanceTypeSelector = document.getElementById('attendance-type-selector');
+      if (attendanceTypeSelector) {
+        attendanceTypeSelector.classList.remove('hidden');
+        console.log('✅ Desktop attendance type selector shown');
+      } else {
+        console.warn('⚠️ Desktop attendance type selector not found!');
+      }
+
+      const attendanceTypeSelectorMobile = document.getElementById('attendance-type-selector-mobile');
+      if (attendanceTypeSelectorMobile) {
+        attendanceTypeSelectorMobile.classList.remove('hidden');
+        attendanceTypeSelectorMobile.style.display = 'block';
+        console.log('✅ Mobile attendance type selector shown');
+      } else {
+        console.warn('⚠️ Mobile attendance type selector not found!');
+      }
+
+      // Clear time window info
+      const timeWindowInfo = document.getElementById('time-window-info');
+      const timeWindowInfoMobile = document.getElementById('time-window-info-mobile');
+      if (timeWindowInfo) {
+        timeWindowInfo.classList.add('hidden');
+      }
+      if (timeWindowInfoMobile) {
+        timeWindowInfoMobile.classList.add('hidden');
+      }
+
+      // Don't return - continue to show selectors at the end
+    } else if (availableOptionsCount === 1) {
+      // Only one option - auto-select it
+      const singleOptionValue = Array.from(addedValues)[0];
+      console.log('✅ Only one option available, auto-selecting:', singleOptionValue);
+
+      // Determine which dropdown is visible based on screen size
+      const isMobile = window.innerWidth < 1024; // lg breakpoint
+      const activeDropdown = isMobile ? dropdownMobile : dropdown;
+
+      // Set value on both dropdowns (for consistency)
+      if (dropdown) {
+        dropdown.value = singleOptionValue;
+      }
+      if (dropdownMobile) {
+        dropdownMobile.value = singleOptionValue;
+      }
+
+      // Only trigger change event on the visible/active dropdown to avoid starting scanner twice
+      if (activeDropdown) {
+        console.log('🚀 Triggering change event on', isMobile ? 'mobile' : 'desktop', 'dropdown');
+        activeDropdown.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    } else {
+      // Multiple options - enable dropdowns and let user choose
+      if (dropdown) {
+        dropdown.disabled = false;
+      }
+      if (dropdownMobile) {
+        dropdownMobile.disabled = false;
+      }
+    }
+
+    // Show attendance type selector (Desktop)
+    const attendanceTypeSelector = document.getElementById('attendance-type-selector');
+    if (attendanceTypeSelector) {
+      attendanceTypeSelector.classList.remove('hidden');
+    }
+
+    // Show attendance type selector (Mobile) - Make sure it's visible
+    const attendanceTypeSelectorMobile = document.getElementById('attendance-type-selector-mobile');
+    if (attendanceTypeSelectorMobile) {
+      attendanceTypeSelectorMobile.classList.remove('hidden');
+      // Force display to ensure it's visible
+      attendanceTypeSelectorMobile.style.display = 'block';
+    }
+
+    // Update mobile event select to show selected event
+    const eventSelectMobile = document.getElementById('event-select-mobile');
+    if (eventSelectMobile) {
+      eventSelectMobile.value = eventId;
+    }
+
+    // Scroll to attendance type selector on mobile for better UX
+    if (attendanceTypeSelectorMobile && window.innerWidth < 1024) {
+      setTimeout(() => {
+        attendanceTypeSelectorMobile.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    }
+
+    // Stop any existing scanner
+    if (html5QrcodeScanner && isScanning) {
+      stopScanner();
+    }
+
+    // Update UI
+    document.querySelectorAll('.event-btn').forEach(btn => {
+      btn.classList.remove('border-pulse-orange', 'bg-pulse-orange/10');
+      btn.classList.add('border-pulse-blue/20', 'bg-pulse-navyLighter/50');
+    });
+    const selectedBtn = document.querySelector(`[data-event-id="${eventId}"]`);
+    if (selectedBtn) {
+      selectedBtn.classList.add('border-pulse-orange', 'bg-pulse-orange/10');
+      selectedBtn.classList.remove('border-pulse-blue/20', 'bg-pulse-navyLighter/50');
+    }
+
+    // Update status - waiting for attendance type selection
+    document.getElementById('scanner-status').innerHTML = `
+      <div class="inline-flex items-center gap-2 px-4 py-2 bg-pulse-orange/20 rounded-full border border-pulse-orange/30">
+        <svg class="w-5 h-5 text-pulse-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="text-pulse-orange font-semibold">Please select an attendance type to start scanning</p>
+      </div>
+    `;
+
+    // Hide current event info until attendance type is selected
+    document.getElementById('current-event-info').classList.add('hidden');
+  }
+
+  // Verify buttons and add click listeners on page load
+  document.addEventListener('DOMContentLoaded', function () {
+    console.log('✅ DOM Content Loaded');
+
+    // Verify event buttons exist and add click listeners as backup
+    const eventButtons = document.querySelectorAll('.event-btn');
+    console.log('🔘 Found', eventButtons.length, 'event buttons');
+    eventButtons.forEach((btn, index) => {
+      const eventId = btn.getAttribute('data-event-id');
+      console.log(`  Button ${index + 1}: Event ID = ${eventId}`);
+
+      // Add click listener as backup (in case onclick doesn't work)
+      btn.addEventListener('click', function (e) {
+        console.log('🖱️ Button clicked via event listener, Event ID:', eventId);
+        const eventIdNum = parseInt(eventId);
+        const eventTitle = btn.querySelector('.font-semibold')?.textContent?.trim() || 'Unknown Event';
+        const availableTypesCount = btn.getAttribute('data-types') || '0';
+        console.log('📞 Calling selectEvent from button click listener');
+        selectEvent(eventIdNum, eventTitle, parseInt(availableTypesCount));
+      });
+    });
+
+    // Mobile event selection handler
+    const eventSelectMobile = document.getElementById('event-select-mobile');
+    if (eventSelectMobile) {
+      eventSelectMobile.addEventListener('change', function () {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+          const eventId = parseInt(selectedOption.value);
+          const eventTitle = selectedOption.dataset.title;
+          const availableTypesCount = parseInt(selectedOption.dataset.types || '0');
+          selectEvent(eventId, eventTitle, availableTypesCount);
+        } else {
+          // Reset if no event selected
+          currentEventId = null;
+          currentAttendanceType = null;
+          const attendanceTypeSelectorMobile = document.getElementById('attendance-type-selector-mobile');
+          if (attendanceTypeSelectorMobile) {
+            attendanceTypeSelectorMobile.classList.add('hidden');
+          }
+          const currentEventInfoMobile = document.getElementById('current-event-info-mobile');
+          if (currentEventInfoMobile) {
+            currentEventInfoMobile.classList.add('hidden');
+          }
+          stopScanner(true); // Reset event selection when user deselects event
+        }
+      });
+    }
+  });
+
+  // Handle attendance type selection
+  document.addEventListener('DOMContentLoaded', function () {
+    const attendanceTypeDropdown = document.getElementById('attendance-type-dropdown');
+    const timeWindowInfo = document.getElementById('time-window-info');
+    const timeWindowText = document.getElementById('time-window-text');
+
+    if (attendanceTypeDropdown) {
+      console.log('✅ Desktop attendance type dropdown found, attaching event listener');
+      attendanceTypeDropdown.addEventListener('change', function () {
+        console.log('🔄 Attendance type dropdown changed!');
+        const selectedType = this.value;
+        console.log('📝 Selected type value:', selectedType);
+        const selectedOption = this.options[this.selectedIndex];
+        if (!selectedOption) {
+          console.error('❌ No option selected');
+          return;
+        }
+        const timeWindow = selectedOption.dataset.timeWindow;
+        const isEnabled = selectedOption.dataset.enabled === 'true';
+        const endTimeStr = selectedOption.dataset.endTime;
+        console.log('📊 Option data - timeWindow:', timeWindow, 'isEnabled:', isEnabled, 'endTime:', endTimeStr);
+
+        if (!selectedType) {
+          console.log('⚠️ No type selected, clearing');
+          currentAttendanceType = null;
+          return;
+        }
+
+        // IMMEDIATE CHECK: Verify the selected type hasn't expired
+        if (endTimeStr) {
+          console.log('⏰ Checking if type is expired. End time:', endTimeStr);
+          if (!isCurrentlyAvailable(endTimeStr)) {
+            console.error('❌ Selected type has expired! Removing from dropdown.');
+            showNotification('This attendance type has expired and is no longer available.', 'error');
+            this.value = '';
+            currentAttendanceType = null;
+
+            // Remove expired option
+            selectedOption.remove();
+
+            // Also remove from mobile dropdown
+            const dropdownMobile = document.getElementById('attendance-type-dropdown-mobile');
+            if (dropdownMobile) {
+              const mobileOption = Array.from(dropdownMobile.options).find(opt => opt.value === selectedType);
+              if (mobileOption) {
+                mobileOption.remove();
+              }
+            }
+            return;
+          }
+          console.log('✅ Type is still available');
+        }
+
+        // Show/hide time window info
+        if (timeWindow && selectedType) {
+          if (timeWindowText) timeWindowText.textContent = timeWindow;
+          if (timeWindowInfo) {
+            timeWindowInfo.classList.remove('hidden');
+
+            // Update styling based on availability
+            const titleEl = timeWindowInfo.querySelector('p.text-sm.font-semibold');
+            if (isEnabled) {
+              timeWindowInfo.className = 'mt-3 p-3 bg-pulse-blue/20 border border-pulse-blue/30 rounded-pulse';
+              if (timeWindowText) timeWindowText.className = 'text-sm text-text-secondary mt-1';
+              if (titleEl) titleEl.className = 'text-sm font-semibold text-pulse-blue';
+            } else {
+              timeWindowInfo.className = 'mt-3 p-3 bg-pulse-orange/20 border border-pulse-orange/40 rounded-pulse';
+              if (timeWindowText) timeWindowText.className = 'text-sm text-text-secondary mt-1';
+              if (titleEl) titleEl.className = 'text-sm font-semibold text-pulse-orange';
+            }
+          }
+        } else {
+          if (timeWindowInfo) timeWindowInfo.classList.add('hidden');
+        }
+
+        if (!currentEventId) {
+          console.error('❌ No event selected');
+          showNotification('Please select an event first', 'error');
+          this.value = '';
+          return;
+        }
+
+        // Double-check: Verify the selected type is actually in the available types for this event
+        // This is the most important check - if the type isn't in the list, it's not enabled
+        const eventData = eventsData[String(currentEventId)];
+        if (!eventData) {
+          showNotification('Event data not found. Please refresh the page.', 'error');
+          this.value = '';
+          currentAttendanceType = null;
+          return;
+        }
+
+        // Value mapping to normalize backend values (might be "M" instead of "MORNING_IN")
+        const valueMap = {
+          'M': 'MORNING_IN',
+          'O': 'MORNING_OUT',
+          'A': 'AFTERNOON_IN',
+          'F': 'AFTERNOON_OUT',
+          'MORNING_IN': 'MORNING_IN',
+          'MORNING_OUT': 'MORNING_OUT',
+          'AFTERNOON_IN': 'AFTERNOON_IN',
+          'AFTERNOON_OUT': 'AFTERNOON_OUT'
+        };
+
+        // Normalize the selected type
+        const normalizedSelectedType = valueMap[selectedType.toUpperCase()] || selectedType.toUpperCase();
+
+        // Check if the type exists in eventData (normalize backend values too)
+        const typeExists = eventData.some(t => {
+          const normalizedBackendValue = valueMap[String(t.value).toUpperCase()] || String(t.value).toUpperCase();
+          return normalizedBackendValue === normalizedSelectedType;
+        });
+
+        if (!typeExists) {
+          showNotification('This attendance type is not enabled for this event. Please select a valid type from the dropdown.', 'error');
+          this.value = '';
+          currentAttendanceType = null;
+          return;
+        }
+
+        // Check if selected type is currently available (time window)
+        if (!isEnabled) {
+          showNotification('This scan type is not currently available. Please check the time window.', 'error');
+          this.value = '';
+          currentAttendanceType = null;
+          return;
+        }
+
+        // CRITICAL: Real-time check - verify end_time hasn't passed (endTimeStr already declared above at line 897)
+        // Note: endTimeStr was already declared earlier, so we don't redeclare it here
+        if (endTimeStr && !isCurrentlyAvailable(endTimeStr)) {
+          showNotification('This attendance type is no longer available. The time window has ended.', 'error');
+          this.value = '';
+          currentAttendanceType = null;
+
+          // Remove the expired option from dropdown
+          selectedOption.remove();
+
+          // Also remove from mobile dropdown if it exists
+          const dropdownMobile = document.getElementById('attendance-type-dropdown-mobile');
+          if (dropdownMobile) {
+            const mobileOption = Array.from(dropdownMobile.options).find(opt => opt.value === selectedType);
+            if (mobileOption) {
+              mobileOption.remove();
+            }
+          }
+
+          return;
+        }
+
+        // Use normalized value to ensure consistency
+        currentAttendanceType = normalizedSelectedType;
+        console.log('✅ Attendance type selected:', currentAttendanceType, 'Event:', currentEventId);
+        console.log('✅ Verifying values - Event ID:', currentEventId, 'Type:', currentAttendanceType, 'Title:', currentEventTitle);
+
+        // Double-check that we have all required values
+        if (!currentEventId || !currentAttendanceType) {
+          console.error('❌ Missing required values - Event:', currentEventId, 'Type:', currentAttendanceType);
+          showNotification('Error: Missing event or attendance type. Please try again.', 'error');
+          return;
+        }
+
+        // Show current event info
+        const eventInfo = document.getElementById('current-event-info');
+        const eventTitleEl = document.getElementById('current-event-title');
+        const eventTimeEl = document.getElementById('current-event-time');
+
+        if (eventInfo && eventTitleEl) {
+          eventInfo.classList.remove('hidden');
+          const selectedLabel = this.options[this.selectedIndex].text;
+          eventTitleEl.textContent = `${currentEventTitle} - ${selectedLabel}`;
+          const eventBtn = document.querySelector(`[data-event-id="${currentEventId}"]`);
+          if (eventBtn && eventTimeEl) {
+            const timeText = eventBtn.querySelector('.text-sm')?.textContent || '';
+            eventTimeEl.textContent = timeText;
+          }
+        }
+
+        // Update status - show loading immediately
+        const scannerStatus = document.getElementById('scanner-status');
+        if (scannerStatus) {
+          scannerStatus.innerHTML = `
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full">
+            <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-blue-700 font-semibold">Starting camera...</p>
+          </div>
+        `;
+        }
+
+        // Start scanner immediately (no setTimeout delay)
+        console.log('🚀 Calling startScanner() now...');
+        try {
+          startScanner();
+        } catch (err) {
+          console.error('❌ Error calling startScanner():', err);
+          if (scannerStatus) {
+            scannerStatus.innerHTML = `
+              <div class="inline-flex items-center gap-2 px-4 py-2 bg-red-100 rounded-full">
+                <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <p class="text-red-700 font-semibold">Error starting camera. Check console.</p>
+              </div>
+            `;
+          }
+        }
+      });
+    }
+
+    // Handle mobile attendance type selection
+    const attendanceTypeDropdownMobile = document.getElementById('attendance-type-dropdown-mobile');
+    const timeWindowInfoMobile = document.getElementById('time-window-info-mobile');
+    const timeWindowTextMobile = document.getElementById('time-window-text-mobile');
+
+    if (attendanceTypeDropdownMobile) {
+      console.log('✅ Mobile attendance type dropdown found, attaching event listener');
+      attendanceTypeDropdownMobile.addEventListener('change', function () {
+        console.log('🔄 Mobile attendance type dropdown changed!');
+        const selectedType = this.value.trim();
+        console.log('📝 Selected type value (mobile):', selectedType);
+        const selectedOption = this.options[this.selectedIndex];
+        if (!selectedOption) {
+          console.error('❌ No option selected (mobile)');
+          return;
+        }
+        const timeWindow = selectedOption.dataset.timeWindow;
+        const isEnabled = selectedOption.dataset.enabled === 'true';
+        const endTimeStr = selectedOption.dataset.endTime;
+        console.log('📊 Option data (mobile) - timeWindow:', timeWindow, 'isEnabled:', isEnabled, 'endTime:', endTimeStr);
+
+        if (!selectedType) {
+          console.log('⚠️ No type selected (mobile), clearing');
+          currentAttendanceType = null;
+          return;
+        }
+
+        // IMMEDIATE CHECK: Verify the selected type hasn't expired
+        if (endTimeStr) {
+          console.log('⏰ Checking if type is expired (mobile). End time:', endTimeStr);
+          if (!isCurrentlyAvailable(endTimeStr)) {
+            console.error('❌ Selected type has expired (mobile)! Removing from dropdown.');
+            showNotification('This attendance type has expired and is no longer available.', 'error');
+            this.value = '';
+            currentAttendanceType = null;
+
+            // Remove expired option
+            selectedOption.remove();
+
+            // Also remove from desktop dropdown
+            const dropdown = document.getElementById('attendance-type-dropdown');
+            if (dropdown) {
+              const desktopOption = Array.from(dropdown.options).find(opt => opt.value === selectedType);
+              if (desktopOption) {
+                desktopOption.remove();
+              }
+            }
+            return;
+          }
+          console.log('✅ Type is still available (mobile)');
+        }
+
+        // Show/hide time window info
+        if (timeWindow && selectedType && timeWindowInfoMobile && timeWindowTextMobile) {
+          timeWindowTextMobile.textContent = timeWindow;
+          timeWindowInfoMobile.classList.remove('hidden');
+        } else if (timeWindowInfoMobile) {
+          timeWindowInfoMobile.classList.add('hidden');
+        }
+
+        if (!currentEventId) {
+          console.error('❌ No event selected (mobile)');
+          showNotification('Please select an event first', 'error');
+          this.value = '';
+          return;
+        }
+
+        // Verify the selected type is actually in the available types for this event
+        const eventData = eventsData[String(currentEventId)];
+        if (!eventData) {
+          showNotification('Event data not found. Please refresh the page.', 'error');
+          this.value = '';
+          currentAttendanceType = null;
+          return;
+        }
+
+        // Value mapping to normalize backend values
+        const valueMap = {
+          'M': 'MORNING_IN',
+          'O': 'MORNING_OUT',
+          'A': 'AFTERNOON_IN',
+          'F': 'AFTERNOON_OUT',
+          'MORNING_IN': 'MORNING_IN',
+          'MORNING_OUT': 'MORNING_OUT',
+          'AFTERNOON_IN': 'AFTERNOON_IN',
+          'AFTERNOON_OUT': 'AFTERNOON_OUT'
+        };
+
+        // Normalize the selected type
+        const normalizedSelectedType = valueMap[selectedType.toUpperCase()] || selectedType.toUpperCase();
+
+        // Check if the type exists in eventData
+        const typeExists = eventData.some(t => {
+          const normalizedBackendValue = valueMap[String(t.value).toUpperCase()] || String(t.value).toUpperCase();
+          return normalizedBackendValue === normalizedSelectedType;
+        });
+
+        if (!typeExists) {
+          showNotification('This attendance type is not enabled for this event. Please select a valid type.', 'error');
+          this.value = '';
+          currentAttendanceType = null;
+          return;
+        }
+
+        // Check if selected type is currently available (time window)
+        if (!isEnabled) {
+          showNotification('This scan type is not currently available. Please check the time window.', 'error');
+          this.value = '';
+          currentAttendanceType = null;
+          return;
+        }
+
+        // CRITICAL: Real-time check - verify end_time hasn't passed (endTimeStr already declared above at line 1108)
+        // Note: endTimeStr was already declared earlier, so we don't redeclare it here
+        if (endTimeStr && !isCurrentlyAvailable(endTimeStr)) {
+          showNotification('This attendance type is no longer available. The time window has ended.', 'error');
+          this.value = '';
+          currentAttendanceType = null;
+
+          // Remove the expired option from mobile dropdown
+          selectedOption.remove();
+
+          // Also remove from desktop dropdown if it exists
+          const dropdown = document.getElementById('attendance-type-dropdown');
+          if (dropdown) {
+            const desktopOption = Array.from(dropdown.options).find(opt => opt.value === selectedType);
+            if (desktopOption) {
+              desktopOption.remove();
+            }
+          }
+
+          return;
+        }
+
+        // Use normalized value to ensure consistency
+        currentAttendanceType = normalizedSelectedType;
+        console.log('✅ Attendance type selected (mobile):', currentAttendanceType, 'Event:', currentEventId);
+        console.log('✅ Verifying values - Event ID:', currentEventId, 'Type:', currentAttendanceType, 'Title:', currentEventTitle);
+
+        // Double-check that we have all required values
+        if (!currentEventId || !currentAttendanceType) {
+          console.error('❌ Missing required values - Event:', currentEventId, 'Type:', currentAttendanceType);
+          showNotification('Error: Missing event or attendance type. Please try again.', 'error');
+          return;
+        }
+
+        // Show current event info (Mobile)
+        const eventInfoMobile = document.getElementById('current-event-info-mobile');
+        const eventTitleMobile = document.getElementById('current-event-title-mobile');
+        const eventTimeMobile = document.getElementById('current-event-time-mobile');
+
+        if (eventInfoMobile && eventTitleMobile) {
+          eventInfoMobile.classList.remove('hidden');
+          const selectedLabel = this.options[this.selectedIndex].textContent;
+          eventTitleMobile.textContent = `${currentEventTitle} - ${selectedLabel}`;
+        }
+
+        // Update status - show loading immediately
+        const scannerStatus = document.getElementById('scanner-status');
+        if (scannerStatus) {
+          scannerStatus.innerHTML = `
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full">
+              <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p class="text-blue-700 font-semibold">Starting camera...</p>
+            </div>
+          `;
+        }
+
+        // Start scanner immediately (no setTimeout delay)
+        console.log('🚀 Calling startScanner() now (mobile)...');
+        try {
+          startScanner();
+        } catch (err) {
+          console.error('❌ Error calling startScanner() (mobile):', err);
+          if (scannerStatus) {
+            scannerStatus.innerHTML = `
+                <div class="inline-flex items-center gap-2 px-4 py-2 bg-red-100 rounded-full">
+                  <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                  </svg>
+                  <p class="text-red-700 font-semibold">Error starting camera. Check console.</p>
+                </div>
+              `;
+          }
+        }
+      });
+    }
+  });
+
+  function stopScanner(resetEventSelection = false) {
+    if (html5QrcodeScanner && isScanning) {
+      html5QrcodeScanner.stop().then(() => {
+        html5QrcodeScanner.clear();
+        isScanning = false;
+        const currentEventInfo = document.getElementById('current-event-info');
+        if (currentEventInfo) {
+          currentEventInfo.classList.add('hidden');
+        }
+
+        // Only reset event selection if explicitly requested (e.g., when user manually stops)
+        // Don't reset when switching events - that's handled by selectEvent()
+        if (resetEventSelection) {
+          const scannerStatus = document.getElementById('scanner-status');
+          if (scannerStatus) {
+            scannerStatus.innerHTML = `
+            <div class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p class="text-gray-600">Select an event to start scanning</p>
+            </div>
+          `;
+          }
+          currentEventId = null;
+          currentEventTitle = '';
+          currentAttendanceType = null;
+        }
+        // Reset attendance type selector (both desktop and mobile) only if resetting event selection
+        if (resetEventSelection) {
+          const dropdown = document.getElementById('attendance-type-dropdown');
+          const dropdownMobile = document.getElementById('attendance-type-dropdown-mobile');
+          if (dropdown) {
+            dropdown.value = '';
+          }
+          if (dropdownMobile) {
+            dropdownMobile.value = '';
+          }
+          const attendanceTypeSelector = document.getElementById('attendance-type-selector');
+          if (attendanceTypeSelector) {
+            attendanceTypeSelector.classList.add('hidden');
+          }
+          const attendanceTypeSelectorMobile = document.getElementById('attendance-type-selector-mobile');
+          if (attendanceTypeSelectorMobile) {
+            attendanceTypeSelectorMobile.classList.add('hidden');
+          }
+          const currentEventInfoMobile = document.getElementById('current-event-info-mobile');
+          if (currentEventInfoMobile) {
+            currentEventInfoMobile.classList.add('hidden');
+          }
+        }
+
+        // Always clear scanner element
+        const scannerElement = document.getElementById('qr-reader');
+        if (scannerElement) {
+          scannerElement.innerHTML = '';
+        }
+      }).catch(err => {
+        // Force clear even if stop fails
+        html5QrcodeScanner.clear();
+        isScanning = false;
+
+        // Only reset event selection if explicitly requested
+        if (resetEventSelection) {
+          currentEventId = null;
+          currentEventTitle = '';
+          currentAttendanceType = null;
+
+          // Reset attendance type selector (both desktop and mobile)
+          const dropdown = document.getElementById('attendance-type-dropdown');
+          const dropdownMobile = document.getElementById('attendance-type-dropdown-mobile');
+          if (dropdown) {
+            dropdown.value = '';
+          }
+          if (dropdownMobile) {
+            dropdownMobile.value = '';
+          }
+          const attendanceTypeSelector = document.getElementById('attendance-type-selector');
+          if (attendanceTypeSelector) {
+            attendanceTypeSelector.classList.add('hidden');
+          }
+          const attendanceTypeSelectorMobile = document.getElementById('attendance-type-selector-mobile');
+          if (attendanceTypeSelectorMobile) {
+            attendanceTypeSelectorMobile.classList.add('hidden');
+          }
+          const currentEventInfoMobile = document.getElementById('current-event-info-mobile');
+          if (currentEventInfoMobile) {
+            currentEventInfoMobile.classList.add('hidden');
+          }
+        }
+
+        // Always clear scanner element
+        const scannerElement = document.getElementById('qr-reader');
+        if (scannerElement) {
+          scannerElement.innerHTML = '';
+        }
+      });
+    } else if (!html5QrcodeScanner && resetEventSelection) {
+      // If scanner doesn't exist but we need to reset, just reset the state
+      currentEventId = null;
+      currentEventTitle = '';
+      currentAttendanceType = null;
+
+      const dropdown = document.getElementById('attendance-type-dropdown');
+      const dropdownMobile = document.getElementById('attendance-type-dropdown-mobile');
+      if (dropdown) {
+        dropdown.value = '';
+      }
+      if (dropdownMobile) {
+        dropdownMobile.value = '';
+      }
+      const attendanceTypeSelector = document.getElementById('attendance-type-selector');
+      if (attendanceTypeSelector) {
+        attendanceTypeSelector.classList.add('hidden');
+      }
+      const attendanceTypeSelectorMobile = document.getElementById('attendance-type-selector-mobile');
+      if (attendanceTypeSelectorMobile) {
+        attendanceTypeSelectorMobile.classList.add('hidden');
+      }
+    }
+  }
+
+  function closeResults() {
+    document.getElementById('scan-results').classList.add('hidden');
+  }
+
+  function showTimeoutError(customMessage = null) {
+    const message = customMessage || 'The server took too long to respond. Please check your connection and try again.';
+    if (window.visualTimeoutId) {
+      clearInterval(window.visualTimeoutId);
+    }
+    if (window.currentProgressInterval) {
+      clearInterval(window.currentProgressInterval);
+    }
+    document.getElementById('result-message').innerHTML = `
+    <div class="bg-pulse-orange/20 border-2 border-pulse-orange/40 rounded-pulse p-6">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="p-2 bg-pulse-orange/30 rounded-full">
+          <svg class="w-8 h-8 text-pulse-orange" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-xl font-bold text-pulse-orange">Request Timeout</h4>
+          <p class="text-sm text-text-secondary mt-1">${message}</p>
+          <p class="text-xs text-text-muted mt-2">Check browser console (F12) for details. The server may be slow or unresponsive.</p>
+        </div>
+      </div>
+      <div class="mt-4 space-y-2">
+        <button onclick="startScanner()" class="w-full px-4 py-2 bg-pulse-orange text-white rounded-pulse hover:opacity-90 transition-colors font-medium shadow-pulse-sm">
+          Try Scanning Again
+        </button>
+        <button onclick="testManualToken()" class="w-full px-4 py-2 bg-pulse-blue text-white rounded-pulse hover:opacity-90 transition-colors font-medium text-sm shadow-pulse-sm">
+          Test with Manual Token
+        </button>
+      </div>
+    </div>
+  `;
+    setTimeout(() => {
+      document.getElementById('scan-results').classList.add('hidden');
+      startScanner();
+    }, 8000);
+  }
+
+  // Detect mobile device
+  function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      (window.innerWidth <= 768);
+  }
+
+  async function startScanner() {
+    console.log('🔍 startScanner() called - Event:', currentEventId, 'Type:', currentAttendanceType, 'IsScanning:', isScanning);
+
+    if (isScanning) {
+      console.log('⚠️ Already scanning, returning');
+      return;
+    }
+
+    if (!currentEventId) {
+      console.error('❌ No event selected');
+      showNotification('Please select an event first', 'error');
+      return;
+    }
+
+    if (!currentAttendanceType) {
+      console.error('❌ No attendance type selected. Current value:', currentAttendanceType);
+      showNotification('Please select an attendance type first', 'error');
+      // Only update status if it's not already showing "Starting camera..."
+      const scannerStatus = document.getElementById('scanner-status');
+      if (scannerStatus && !scannerStatus.innerHTML.includes('Starting camera')) {
+        scannerStatus.innerHTML = `
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-pulse-orange/20 rounded-full border border-pulse-orange/30">
+            <svg class="w-5 h-5 text-pulse-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p class="text-pulse-orange font-semibold">Please select an attendance type to start scanning</p>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    console.log('✅ Starting scanner with Event:', currentEventId, 'Type:', currentAttendanceType);
+
+    if (!isSecureOrigin && isMobileDevice()) {
+      showSecureContextError();
+      return;
+    }
+
+    if (!availableCameras.length) {
+      try {
+        const cameras = await Html5Qrcode.getCameras();
+        availableCameras = cameras || [];
+        preferredCameraId = getPreferredCameraId();
+      } catch (cameraListError) {
+        console.error('Unable to enumerate cameras', cameraListError);
+        handleCameraError(cameraListError);
+        return;
+      }
+    }
+
+    if (html5QrcodeScanner) {
+      html5QrcodeScanner.stop().then(() => {
+        html5QrcodeScanner.clear();
+        initializeScanner();
+      }).catch(() => {
+        html5QrcodeScanner.clear();
+        initializeScanner();
+      });
+    } else {
+      initializeScanner();
+    }
+  }
+
+  function getPreferredCameraId() {
+    if (!availableCameras.length) {
+      return null;
+    }
+    const backCamera = availableCameras.find((cam) =>
+      cam.label && cam.label.toLowerCase().includes('back'));
+    return (backCamera || availableCameras[0]).id;
+  }
+
+  function initializeScanner() {
+    try {
+      const scannerElement = document.getElementById('qr-reader');
+      if (!scannerElement) {
+        return;
+      }
+
+      scannerElement.innerHTML = ''; // Clear previous content
+
+      html5QrcodeScanner = new Html5Qrcode("qr-reader");
+
+      // Show scanning overlay
+      const overlay = document.getElementById('scanning-overlay');
+      if (overlay) {
+        overlay.classList.remove('hidden');
+      }
+
+      // Mobile-specific configuration
+      const isMobile = isMobileDevice();
+      const viewportWidth = window.innerWidth;
+
+      // Calculate appropriate qrbox size for mobile
+      let qrboxSize = Math.min(Math.floor(viewportWidth * 0.85), 320);
+      qrboxSize = Math.max(qrboxSize, 220);
+
+      const cameraConfig = preferredCameraId
+        ? { deviceId: { exact: preferredCameraId } }
+        : { facingMode: "environment" };
+
+      // Scanner configuration
+      const config = {
+        fps: isMobile ? 5 : 10, // Lower FPS on mobile for better performance
+        qrbox: { width: qrboxSize, height: qrboxSize }, // Fixed size for better mobile compatibility
+        aspectRatio: 1.0,
+        disableFlip: false, // Allow flipping on mobile
+        rememberLastUsedCamera: false // Don't remember camera to avoid issues
+      };
+
+      // Try to start scanner with back camera first
+      html5QrcodeScanner.start(
+        cameraConfig,
+        config,
+        onScanSuccess,
+        onScanError
+      ).then(() => {
+        // Hide overlay when scanner starts
+        document.getElementById('scanning-overlay').classList.add('hidden');
+        isScanning = true;
+        document.getElementById('scanner-status').innerHTML = `
+      <div class="inline-flex items-center gap-2 px-4 py-2 bg-pulse-orange/20 rounded-full border border-pulse-orange/30">
+        <svg class="w-5 h-5 text-pulse-orange animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+        <p class="text-pulse-orange font-semibold">Camera active - Ready to scan</p>
+      </div>
+    `;
+      }).catch(err => {
+        console.error("Unable to start scanning", err);
+
+        // If back camera fails on mobile, try front camera as fallback
+        if (isMobile && err.name !== 'NotAllowedError' && err.name !== 'NotFoundError') {
+          document.getElementById('scanner-status').innerHTML = `
+        <div class="inline-flex items-center gap-2 px-4 py-2 bg-pulse-orange/20 rounded-full border border-pulse-orange/30">
+          <svg class="w-5 h-5 text-pulse-orange" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+          </svg>
+          <p class="text-pulse-orange">Trying front camera...</p>
+        </div>
+      `;
+
+          // Try front camera
+          const frontCameraConfig = isMobile
+            ? { facingMode: { ideal: "user" } }
+            : { facingMode: "user" };
+          html5QrcodeScanner.start(
+            frontCameraConfig,
+            config,
+            onScanSuccess,
+            onScanError
+          ).then(() => {
+            document.getElementById('scanning-overlay').classList.add('hidden');
+            isScanning = true;
+            document.getElementById('scanner-status').innerHTML = `
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 rounded-full">
+            <svg class="w-5 h-5 text-green-600 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <p class="text-green-700 font-semibold">Camera active - Ready to scan</p>
+          </div>
+        `;
+          }).catch(frontErr => {
+            handleCameraError(frontErr);
+          });
+        } else {
+          handleCameraError(err);
+        }
+      }).catch(outerErr => {
+        console.error('❌ Outer error in scanner start:', outerErr);
+        handleCameraError(outerErr);
+      });
+    } catch (initError) {
+      console.error('❌ Error in initializeScanner:', initError);
+      handleCameraError(initError);
+    }
+  }
+
+  function handleCameraError(err) {
+    document.getElementById('scanning-overlay').classList.add('hidden');
+    let errorMessage = 'Unable to access camera. ';
+
+    if (err.name === 'NotAllowedError') {
+      errorMessage += 'Please allow camera access in your browser settings.';
+    } else if (err.name === 'NotFoundError') {
+      errorMessage += 'No camera found on this device.';
+    } else if (err.name === 'NotReadableError') {
+      errorMessage += 'Camera is already in use by another application.';
+    } else {
+      errorMessage += 'Please check camera permissions and try again.';
+    }
+
+    if (!isSecureOrigin) {
+      errorMessage += ' This page must be loaded over HTTPS for the camera to work on most mobile browsers.';
+    }
+
+    document.getElementById('scanner-status').innerHTML = `
+    <div class="bg-pulse-orange/20 border border-pulse-orange/40 rounded-pulse p-4">
+      <div class="flex items-center gap-3 mb-3">
+        <svg class="w-6 h-6 text-pulse-orange" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+        </svg>
+        <div>
+          <p class="text-pulse-orange font-semibold">Camera Error</p>
+          <p class="text-text-secondary text-sm">${errorMessage}</p>
+        </div>
+      </div>
+      ${isMobileDevice() ? `
+      <div class="mt-3 p-3 bg-pulse-orange/20 border border-pulse-orange/40 rounded text-sm text-pulse-orange">
+        <p class="font-semibold mb-1">Mobile Camera Tips:</p>
+        <ul class="list-disc list-inside space-y-1 text-xs">
+          <li>Make sure you're using HTTPS (required for camera access)</li>
+          <li>Check browser settings and allow camera permissions</li>
+          <li>Try refreshing the page and allowing camera access when prompted</li>
+          <li>Close other apps that might be using the camera</li>
+        </ul>
+      </div>
+      ` : ''}
+      <button onclick="startScanner()" class="mt-3 w-full px-4 py-2 bg-pulse-blue text-white rounded-pulse hover:opacity-90 transition-colors font-medium shadow-pulse-sm">
+        Try Again
+      </button>
+    </div>
+  `;
+  }
+
+  function showSecureContextError() {
+    const alertBox = document.getElementById('secure-context-alert');
+    if (alertBox) {
+      alertBox.classList.remove('hidden');
+    }
+    document.getElementById('scanner-status').innerHTML = `
+      <div class="bg-pulse-orange/20 border border-pulse-orange/40 rounded-pulse p-4 text-left">
+        <div class="flex items-center gap-3 mb-2">
+          <svg class="w-6 h-6 text-pulse-orange" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+          </svg>
+          <div>
+            <p class="text-pulse-orange font-semibold">Camera blocked by browser</p>
+            <p class="text-text-secondary text-sm">For security, mobile browsers require HTTPS to access the camera. Switch to your secure ngrok/production URL or use the QR image uploader below.</p>
+          </div>
+        </div>
+        <button onclick="startScanner()" class="mt-2 px-4 py-2 bg-pulse-blue text-white rounded-pulse hover:opacity-90 text-sm font-semibold shadow-pulse-sm">Check Again</button>
+      </div>
+    `;
+  }
+
+  async function handleQrFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) {
+      return;
+    }
+
+    if (!currentEventId) {
+      showNotification('Select an event before uploading a QR image.', 'error');
+      event.target.value = '';
+      return;
+    }
+
+    document.getElementById('scan-results').classList.remove('hidden');
+    document.getElementById('result-message').innerHTML = `
+      <div class="flex flex-col items-center gap-3 p-6">
+        <svg class="animate-spin h-12 w-12 text-pulse-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <p class="text-sm text-text-secondary">Scanning uploaded QR image...</p>
+      </div>
+    `;
+
+    // Pause live scanner if running
+    if (html5QrcodeScanner && isScanning) {
+      try {
+        await html5QrcodeScanner.stop();
+      } catch (e) {
+        // ignore
+      }
+      html5QrcodeScanner.clear();
+      html5QrcodeScanner = null;
+      isScanning = false;
+    }
+
+    const fileReaderElementId = 'qr-file-reader';
+    const tempScanner = new Html5Qrcode(fileReaderElementId);
+
+    tempScanner.scanFile(file, true)
+      .then(decodedText => {
+        tempScanner.clear();
+        event.target.value = '';
+        onScanSuccess(decodedText, {});
+      })
+      .catch(err => {
+        tempScanner.clear();
+        event.target.value = '';
+        showNotification('Unable to read QR image: ' + err, 'error');
+        document.getElementById('scan-results').classList.add('hidden');
+        if (currentEventId) {
+          startScanner();
+        }
+      });
+  }
+
+  function updateSecureContextBanner() {
+    const alertBox = document.getElementById('secure-context-alert');
+    if (!alertBox) return;
+    if (!isSecureOrigin && isMobileDevice()) {
+      alertBox.classList.remove('hidden');
+    } else {
+      alertBox.classList.add('hidden');
+    }
+  }
+
+  function onScanSuccess(decodedText, decodedResult) {
+    try {
+      if (!currentEventId) {
+        showNotification('Please select an event first', 'error');
+        return;
+      }
+
+      if (!currentAttendanceType) {
+        showNotification('Please select an attendance type first', 'error');
+        return;
+      }
+
+      // Final validation: Ensure the selected attendance type is valid and enabled for this event
+      const eventData = eventsData[String(currentEventId)];
+      if (!eventData) {
+        showNotification('Event data not found. Please refresh the page.', 'error');
+        return;
+      }
+
+      // Value mapping to normalize backend values (might be "M" instead of "MORNING_IN")
+      const valueMap = {
+        'M': 'MORNING_IN',
+        'O': 'MORNING_OUT',
+        'A': 'AFTERNOON_IN',
+        'F': 'AFTERNOON_OUT',
+        'MORNING_IN': 'MORNING_IN',
+        'MORNING_OUT': 'MORNING_OUT',
+        'AFTERNOON_IN': 'AFTERNOON_IN',
+        'AFTERNOON_OUT': 'AFTERNOON_OUT'
+      };
+
+      // Normalize the current attendance type
+      const normalizedCurrentType = valueMap[String(currentAttendanceType).toUpperCase()] || String(currentAttendanceType).toUpperCase();
+
+      // Find the type in eventData using normalized comparison
+      const selectedTypeData = eventData.find(t => {
+        const normalizedBackendValue = valueMap[String(t.value).toUpperCase()] || String(t.value).toUpperCase();
+        return normalizedBackendValue === normalizedCurrentType;
+      });
+
+      if (!selectedTypeData) {
+        showNotification('The selected attendance type is not enabled for this event. Please select a valid type.', 'error');
+        currentAttendanceType = null;
+        // Reset dropdowns (both desktop and mobile)
+        const dropdown = document.getElementById('attendance-type-dropdown');
+        const dropdownMobile = document.getElementById('attendance-type-dropdown-mobile');
+        if (dropdown) {
+          dropdown.value = '';
+        }
+        if (dropdownMobile) {
+          dropdownMobile.value = '';
+        }
+        return;
+      }
+
+      // Clean the decoded text - remove any whitespace
+      const cleanedToken = decodedText.trim();
+
+      // Show visual indicator that QR was detected
+      const indicator = document.getElementById('qr-detected-indicator');
+      if (indicator) {
+        indicator.classList.remove('hidden');
+        setTimeout(() => indicator.classList.add('hidden'), 2000);
+      }
+
+      // Visual feedback that QR was detected
+      document.getElementById('scanner-status').innerHTML = `
+    <div class="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full animate-pulse">
+      <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+      </svg>
+      <p class="text-blue-700 font-semibold">QR Code detected! Processing...</p>
+    </div>
+  `;
+
+      // Stop scanning temporarily
+      if (html5QrcodeScanner && isScanning) {
+        try {
+          // Try pause first (if available)
+          if (typeof html5QrcodeScanner.pause === 'function') {
+            html5QrcodeScanner.pause();
+          } else {
+            // If pause doesn't exist, use stop instead
+            html5QrcodeScanner.stop().catch(() => {
+              // Ignore errors if already stopped
+            });
+          }
+        } catch (err) {
+          console.warn('⚠️ Error pausing scanner:', err);
+          // Try stop as fallback
+          try {
+            html5QrcodeScanner.stop().catch(() => { });
+          } catch (stopErr) {
+            console.warn('⚠️ Error stopping scanner:', stopErr);
+          }
+        }
+      }
+      isScanning = false;
+
+      // Show loading with more prominent display
+      document.getElementById('scan-results').classList.remove('hidden');
+      const startTime = Date.now();
+      let elapsedSeconds = 0;
+
+      // Create a separate visual timeout that always triggers
+      const visualTimeoutId = setInterval(() => {
+        elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+        const progressEl = document.getElementById('elapsed-time');
+        if (progressEl) {
+          progressEl.textContent = `Elapsed: ${elapsedSeconds}s`;
+        }
+
+        // Force timeout after 20 seconds regardless of fetch state
+        if (elapsedSeconds >= 20) {
+          clearInterval(visualTimeoutId);
+          if (window.currentProgressInterval) {
+            clearInterval(window.currentProgressInterval);
+          }
+          console.error('⏱️ FORCED TIMEOUT after 20 seconds - Request may not have been sent!');
+          showTimeoutError();
+          return;
+        }
+      }, 1000);
+
+      // Store timeout ID globally so we can clear it
+      window.visualTimeoutId = visualTimeoutId;
+
+      document.getElementById('result-message').innerHTML = `
+    <div class="flex flex-col items-center justify-center gap-4 p-6">
+      <div class="relative">
+        <svg class="animate-spin h-16 w-16 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+      <div class="text-center">
+        <p class="text-xl font-bold text-gray-900">Processing scan...</p>
+        <p id="progress-message" class="text-sm text-gray-600 mt-2">Validating QR code...</p>
+        <p id="elapsed-time" class="text-xs text-gray-500 mt-2">Elapsed: 0s</p>
+        <p class="text-xs text-gray-400 mt-4">This should only take a few seconds...</p>
+      </div>
+    </div>
+  `;
+
+      // CRITICAL: Double-check the attendance type before sending
+      // Get the current dropdown selection to ensure we're sending the right value
+      // Check both desktop and mobile dropdowns
+      const dropdown = document.getElementById('attendance-type-dropdown');
+      const dropdownMobile = document.getElementById('attendance-type-dropdown-mobile');
+
+      // Use mobile dropdown if on mobile, otherwise use desktop dropdown
+      const activeDropdown = (window.innerWidth < 1024 && dropdownMobile && dropdownMobile.value) ? dropdownMobile : dropdown;
+
+      // Always get the value from the dropdown as the source of truth
+      if (!activeDropdown || !activeDropdown.value) {
+        showNotification('Please select an attendance type before scanning.', 'error');
+        return;
+      }
+
+      const dropdownValue = activeDropdown.value.trim().toUpperCase();
+
+      // Always use the dropdown value (it's the source of truth)
+      if (dropdownValue !== currentAttendanceType) {
+        currentAttendanceType = dropdownValue;
+      }
+
+      // Verify the attendance type is valid (normalize first)
+      const normalizedType = String(currentAttendanceType).trim().toUpperCase();
+      const validTypes = ['MORNING_IN', 'MORNING_OUT', 'AFTERNOON_IN', 'AFTERNOON_OUT'];
+
+      if (!validTypes.includes(normalizedType)) {
+        showNotification(`Invalid attendance type: ${normalizedType}. Please select a valid type from the dropdown.`, 'error');
+        return;
+      }
+
+      // Use the normalized value
+      currentAttendanceType = normalizedType;
+
+      // Send scan to server
+      const formData = new FormData();
+      formData.append('token', cleanedToken); // Use cleaned token
+      formData.append('attendance_type', currentAttendanceType); // Include attendance type
+      formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+      // Verify the attendance type matches what we expect
+
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      let fetchStarted = false;
+
+      const timeoutId = setTimeout(() => {
+        if (!fetchStarted) {
+          showTimeoutError('The request was never sent to the server. Check browser console for errors.');
+          return;
+        }
+        controller.abort();
+        showTimeoutError('The server took too long to respond (15+ seconds).');
+      }, 15000); // 15 second timeout
+
+      // Try to send fetch request
+      try {
+        fetchStarted = true;
+
+        const fetchUrl = `/events/${currentEventId}/scan-qr/`;
+
+        // Wrap fetch in a promise to catch immediate errors
+        const fetchPromise = new Promise((resolve, reject) => {
+          try {
+            const fetchCall = fetch(fetchUrl, {
+              method: 'POST',
+              body: formData,
+              headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+              },
+              signal: controller.signal
+            });
+            resolve(fetchCall);
+          } catch (fetchError) {
+            reject(fetchError);
+          }
+        });
+
+        fetchPromise
+          .then(fetchResult => {
+            return fetchResult;
+          })
+          .then(response => {
+            clearTimeout(timeoutId); // Clear timeout on success
+            if (window.visualTimeoutId) {
+              clearInterval(window.visualTimeoutId);
+            }
+            if (window.currentProgressInterval) {
+              clearInterval(window.currentProgressInterval);
+            }
+
+            if (!response.ok) {
+              // Try to get error message from response
+              return response.text().then(text => {
+                try {
+                  const data = JSON.parse(text);
+                  throw new Error(data.error || `HTTP error! status: ${response.status}`);
+                } catch (e) {
+                  throw new Error(`HTTP error! status: ${response.status}, body: ${text.substring(0, 100)}`);
+                }
+              });
+            }
+            return response.json();
+          })
+          .then(data => {
+            if (data.success) {
+
+              const scanResult = {
+                user: data.user_name,
+                type: data.attendance_type,
+                points: data.points_awarded,
+                timestamp: new Date().toLocaleTimeString()
+              };
+              recentScans.unshift(scanResult);
+              if (recentScans.length > 5) recentScans.pop();
+              updateRecentScans();
+
+              // Show prominent success message - Make it VERY visible
+              document.getElementById('scan-results').classList.remove('hidden');
+              // Scroll to results
+              document.getElementById('scan-results').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+              document.getElementById('result-message').innerHTML = `
+        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl p-6 animate-pulse-once shadow-lg">
+          <!-- Success Header -->
+          <div class="flex items-center justify-center mb-4">
+            <div class="relative">
+              <div class="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
+              <div class="relative p-4 bg-green-500 rounded-full">
+                <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+          
+          <!-- User Info - Prominent -->
+          <div class="text-center mb-4">
+            <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 text-white text-4xl font-bold mb-3 shadow-lg border-4 border-white">
+              ${data.user_name.charAt(0).toUpperCase()}
+            </div>
+            <h3 class="text-3xl font-bold text-gray-900 mb-1">${data.user_name}</h3>
+            ${data.user_email ? `<p class="text-sm text-gray-600 mb-2">${data.user_email}</p>` : ''}
+            <p class="text-green-700 font-semibold text-lg">${data.message}</p>
+          </div>
+          
+          <!-- Details Grid -->
+          <div class="grid grid-cols-2 gap-4 mt-6 pt-6 border-t-2 border-green-200">
+            <div class="bg-white rounded-lg p-4 text-center shadow-sm">
+              <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Attendance Type</div>
+              <div class="text-lg font-bold text-gray-900">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${data.attendance_type === 'MORNING_IN' ? 'bg-amber-100 text-amber-800' :
+                  data.attendance_type === 'MORNING_OUT' ? 'bg-amber-200 text-amber-900' :
+                    data.attendance_type === 'AFTERNOON_IN' ? 'bg-orange-100 text-orange-800' :
+                      'bg-orange-200 text-orange-900'
+                }">
+                  ${data.attendance_type_label || (data.attendance_type === 'MORNING_IN' ? '🌅 Morning Time In' :
+                  data.attendance_type === 'MORNING_OUT' ? '🌅 Morning Time Out' :
+                    data.attendance_type === 'AFTERNOON_IN' ? '🌇 Afternoon Time In' :
+                      '🌇 Afternoon Time Out')
+                }
+                </span>
+              </div>
+            </div>
+            <div class="bg-white rounded-lg p-4 text-center shadow-sm">
+              <div class="text-xs text-gray-500 mb-1 uppercase tracking-wide">Points Awarded</div>
+              <div class="text-2xl font-bold text-green-600">+${data.points_awarded}</div>
+            </div>
+          </div>
+          
+          <!-- Event Info -->
+          <div class="mt-4 pt-4 border-t border-green-200 text-center">
+            <p class="text-sm text-gray-600">
+              <span class="font-semibold">Event:</span> ${currentEventTitle}
+            </p>
+            <p class="text-xs text-gray-500 mt-1">${new Date().toLocaleString()}</p>
+          </div>
+        </div>
+      `;
+
+              // Play success sound
+              playSuccessSound();
+
+              // Show notification
+              showNotification(`Successfully scanned ${data.user_name}!`, 'success');
+
+              // Resume scanning after 5 seconds (longer to see the result clearly)
+              setTimeout(() => {
+                document.getElementById('scan-results').classList.add('hidden');
+                startScanner();
+              }, 5000);
+            } else {
+              console.error('❌ Scan failed:', data.error);
+              document.getElementById('result-message').innerHTML = `
+        <div class="bg-red-50 border-2 border-red-300 rounded-xl p-6">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="p-2 bg-red-200 rounded-full">
+              <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+              </svg>
+            </div>
+            <div>
+              <h4 class="text-xl font-bold text-red-900">Scan Failed</h4>
+              <p class="text-sm text-red-800 mt-1">${data.error || 'Unknown error occurred'}</p>
+            </div>
+          </div>
+          <button onclick="startScanner()" class="mt-4 w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+            Try Scanning Again
+          </button>
+        </div>
+      `;
+
+              // Resume scanning after 4 seconds
+              setTimeout(() => {
+                document.getElementById('scan-results').classList.add('hidden');
+                startScanner();
+              }, 4000);
+            }
+          })
+          .catch(error => {
+            clearTimeout(timeoutId); // Clear timeout on error
+            if (window.visualTimeoutId) {
+              clearInterval(window.visualTimeoutId);
+            }
+            if (window.currentProgressInterval) {
+              clearInterval(window.currentProgressInterval);
+            }
+            console.error('❌ Network/Processing Error:', error);
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+            console.error('Full error:', error);
+            console.error('Error stack:', error.stack);
+
+            let errorMessage = 'An error occurred while processing the scan.';
+            let errorDetails = error.message;
+
+            if (error.name === 'AbortError') {
+              errorMessage = 'Request timeout - The server took too long to respond.';
+              errorDetails = 'Please check your connection and try again.';
+            } else if (error.message.includes('Failed to fetch')) {
+              errorMessage = 'Network error - Could not reach the server.';
+              errorDetails = 'Please check your internet connection.';
+            } else if (error.message.includes('HTTP error')) {
+              errorMessage = 'Server error - The server returned an error.';
+              errorDetails = error.message;
+            }
+
+            document.getElementById('result-message').innerHTML = `
+      <div class="bg-red-50 border-2 border-red-300 rounded-xl p-6">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="p-2 bg-red-200 rounded-full">
+            <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-xl font-bold text-red-900">${errorMessage}</h4>
+            <p class="text-sm text-red-800 mt-1">${errorDetails}</p>
+            <p class="text-xs text-red-600 mt-2 font-mono">${error.name}: ${error.message}</p>
+          </div>
+        </div>
+        <div class="mt-4 space-y-2">
+          <button onclick="startScanner()" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+            Try Scanning Again
+          </button>
+          <button onclick="testManualToken()" class="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors font-medium text-sm">
+            Test with Manual Token
+          </button>
+        </div>
+      </div>
+    `;
+
+            setTimeout(() => {
+              document.getElementById('scan-results').classList.add('hidden');
+              startScanner();
+            }, 6000);
+          });
+      } catch (outerError) {
+        console.error('❌❌❌ OUTER CATCH in onScanSuccess:', outerError);
+        console.error('Error name:', outerError?.name);
+        console.error('Error message:', outerError?.message);
+        console.error('Error stack:', outerError?.stack);
+        showNotification('Critical error: ' + (outerError?.message || 'Unknown error'), 'error');
+      }
+    } catch (functionError) {
+      console.error('❌❌❌ FUNCTION LEVEL ERROR in onScanSuccess:', functionError);
+      console.error('This error occurred at the function level, before any code executed');
+      showNotification('Function error: ' + functionError.message, 'error');
+    }
+  }
+
+  function onScanError(errorMessage) {
+    // Log errors for debugging (but don't show to user as scanner keeps trying)
+    if (errorMessage && !errorMessage.includes('NotFoundException')) {
+      console.log('Scanner error (normal):', errorMessage);
+    }
+  }
+
+  function updateRecentScans() {
+    const recentScansEl = document.getElementById('recent-scans');
+    const recentScansList = document.getElementById('recent-scans-list');
+
+    if (recentScans.length > 0) {
+      recentScansEl.classList.remove('hidden');
+      recentScansList.innerHTML = recentScans.map(scan => `
+      <div class="flex items-center justify-between p-3 bg-pulse-navyLighter rounded-pulse border border-pulse-blue/20">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-pulse-gradient flex items-center justify-center text-white font-bold">
+            ${scan.user.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div class="font-semibold text-gray-900">${scan.user}</div>
+            <div class="text-xs text-gray-500">${scan.type.replace('_', '-')} • ${scan.timestamp}</div>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-sm font-semibold text-green-600">+${scan.points}</div>
+          <div class="text-xs text-gray-500">points</div>
+        </div>
+      </div>
+    `).join('');
+    } else {
+      recentScansEl.classList.add('hidden');
+    }
+  }
+
+  function playSuccessSound() {
+    // Create a simple beep sound using Web Audio API
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    } catch (e) {
+      // Ignore audio errors
+    }
+  }
+
+  function toggleDebug() {
+    const debugInfo = document.getElementById('debug-info');
+    if (debugInfo) {
+      debugInfo.classList.toggle('hidden');
+    }
+  }
+
+  function testManualToken() {
+    console.log('🧪 testManualToken() called');
+
+    try {
+      const tokenInput = document.getElementById('manual-token-input');
+      if (!tokenInput) {
+        console.error('❌ manual-token-input element not found!');
+        showNotification('Token input field not found', 'error');
+        return;
+      }
+
+      const token = tokenInput.value.trim();
+      console.log('📝 Token from input:', token ? token.substring(0, 20) + '...' : 'EMPTY');
+
+      if (!token) {
+        console.warn('⚠️ No token entered');
+        showNotification('Please enter a token', 'error');
+        return;
+      }
+
+      if (!currentEventId) {
+        console.warn('⚠️ No event selected');
+        showNotification('Please select an event first', 'error');
+        return;
+      }
+
+      console.log('🧪 Testing manual token:', token.substring(0, 20) + '...');
+      console.log('🎯 Current event ID:', currentEventId);
+      console.log('📞 Calling onScanSuccess...');
+
+      // Simulate scan success - call onScanSuccess directly
+      try {
+        onScanSuccess(token, {});
+        console.log('✅ onScanSuccess called successfully');
+      } catch (scanError) {
+        showNotification('Error processing token: ' + scanError.message, 'error');
+      }
+    } catch (error) {
+      showNotification('Error: ' + error.message, 'error');
+    }
+  }
+
+  function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 px-6 py-3 rounded-pulse shadow-pulse z-50 transform transition-all animate-slide-in ${type === 'success' ? 'bg-pulse-orange text-white' :
+      type === 'error' ? 'bg-pulse-orange text-white' :
+        'bg-pulse-blue text-white'
+      }`;
+    notification.innerHTML = `
+    <div class="flex items-center gap-2">
+      ${type === 'success' ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>' : ''}
+      <span>${message}</span>
+    </div>
+  `;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      notification.style.transform = 'translateX(100%)';
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+  }
+
+  const qrFileInput = document.getElementById('qr-file-input');
+  if (qrFileInput) {
+    qrFileInput.addEventListener('change', handleQrFileUpload);
+  }
+
+  updateSecureContextBanner();
+
+  // Periodic check to remove expired attendance types from dropdowns
+  function checkAndRemoveExpiredOptions() {
+    const dropdown = document.getElementById('attendance-type-dropdown');
+    const dropdownMobile = document.getElementById('attendance-type-dropdown-mobile');
+
+    [dropdown, dropdownMobile].forEach(dd => {
+      if (!dd) return;
+
+      // Check all options except the first one (which is the placeholder)
+      for (let i = dd.options.length - 1; i >= 1; i--) {
+        const option = dd.options[i];
+        const endTimeStr = option.dataset.endTime;
+
+        if (endTimeStr && !isCurrentlyAvailable(endTimeStr)) {
+          // Option has expired - remove it
+          console.log('Removing expired attendance type:', option.value, 'End time:', endTimeStr);
+          option.remove();
+
+          // If this was the selected option, clear the selection
+          if (dd.value === option.value) {
+            dd.value = '';
+            currentAttendanceType = null;
+            showNotification('The selected attendance type has expired. Please select a different type.', 'error');
+          }
+        }
+      }
+    });
+  }
+
+  // Check for expired options every 30 seconds
+  setInterval(checkAndRemoveExpiredOptions, 30000);
+
+  // Request camera permission on page load (helps with mobile)
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    // Pre-request permission (optional, helps on some mobile browsers)
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        // Stop immediately, we just wanted permission
+        stream.getTracks().forEach(track => track.stop());
+      })
+      .catch(() => {
+        // Permission denied or not available, that's okay
+        // User will be prompted when they try to scan
+      });
+  }
+
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', () => {
+    if (html5QrcodeScanner && isScanning) {
+      html5QrcodeScanner.stop().then(() => {
+        html5QrcodeScanner.clear();
+      }).catch(err => {
+        html5QrcodeScanner.clear();
+      });
+    }
+  });
+
+  // Handle page visibility change (stop when tab is hidden)
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && html5QrcodeScanner && isScanning) {
+      // Stop scanner when page is hidden (pause not available in this version)
+      html5QrcodeScanner.stop().catch(() => { });
+      isScanning = false;
+    } else if (!document.hidden && html5QrcodeScanner && currentEventId && !isScanning) {
+      // Restart scanner when page is visible again
+      startScanner();
+    }
+  });
+</script>
+
+<style>
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes pulse-once {
+
+    0%,
+    100% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.02);
+    }
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.3s ease-out;
+  }
+
+  .animate-pulse-once {
+    animation: pulse-once 0.5s ease-in-out;
+  }
+
+  #qr-reader__dashboard_section_csr {
+    margin-top: 1rem;
+  }
+
+  #qr-reader__scan_region {
+    border-radius: 0.75rem;
+  }
+</style>
+{% endblock %}

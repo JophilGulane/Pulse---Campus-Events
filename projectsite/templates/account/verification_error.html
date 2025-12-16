@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Verification Error - Pulse{% endblock %}
+
+{% block head_extra %}
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+  
+  .animate-fadeIn {
+    animation: fadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+  }
+  
+  .animate-slideUp {
+    animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+  }
+  
+  .delay-200 {
+    animation-delay: 0.2s;
+  }
+  
+  .glass {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .icon-float {
+    animation: float 3s ease-in-out infinite;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-red-50/30 via-orange-50/30 to-pink-50/30 flex items-center justify-center py-4 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+  <!-- Background decorative elements -->
+  <div class="absolute top-10 left-10 w-64 h-64 bg-red-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float"></div>
+  <div class="absolute bottom-10 right-10 w-64 h-64 bg-orange-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style="animation-delay: 1.5s;"></div>
+  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-float" style="animation-delay: 0.75s;"></div>
+  
+  <div class="max-w-md w-full space-y-4 relative z-10">
+    <!-- Header -->
+    <div class="text-center animate-fadeIn">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-orange-500 shadow-lg mb-3 icon-float">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h2 class="text-4xl font-extrabold text-gray-800 mb-1">
+        Verification Failed
+      </h2>
+      <p class="text-gray-600">There was a problem verifying your email</p>
+    </div>
+
+    <!-- Error Card -->
+    <div class="glass rounded-2xl shadow-2xl p-6 md:p-8 animate-slideUp delay-200">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="mb-4 p-4 rounded-xl {% if message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-yellow-50 text-yellow-800 border border-yellow-200{% endif %}">
+            <div class="flex items-start gap-3">
+              <svg class="w-6 h-6 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>{{ message }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="mb-4 p-4 rounded-xl bg-red-50 text-red-800 border border-red-200">
+          <div class="flex items-start gap-3">
+            <svg class="w-6 h-6 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+              <p class="font-semibold mb-1">Invalid or Expired Verification Link</p>
+              <p class="text-sm">The verification link you clicked is invalid or has expired. This can happen if:</p>
+              <ul class="text-sm mt-2 list-disc list-inside space-y-1">
+                <li>The link has already been used</li>
+                <li>The link has expired</li>
+                <li>You changed your password (which invalidates the link)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="space-y-4 text-gray-700">
+        <div>
+          <h3 class="font-semibold text-lg mb-2">What can you do?</h3>
+          <p class="text-sm mb-3">
+            Don't worry! You can request a new verification email by clicking the button below.
+          </p>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="mt-6 space-y-3">
+        <a href="{% url 'resend-verification' %}" class="block w-full text-center py-3 px-6 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl hover:from-red-700 hover:to-orange-700 transition-colors font-semibold shadow-lg">
+          Request New Verification Email
+        </a>
+        <a href="{% url 'login' %}" class="block w-full text-center py-2 px-6 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+          Go to Login
+        </a>
+        <a href="{% url 'landing' %}" class="block w-full text-center py-2 px-6 text-gray-600 hover:text-gray-800 transition-colors text-sm">
+          Back to Home
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

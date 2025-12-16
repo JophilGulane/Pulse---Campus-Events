@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Event - Pulse{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy py-8">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-6 border border-pulse-blue/20">
+      <div class="flex items-center mb-6">
+        <div class="flex-shrink-0">
+          <svg class="h-10 w-10 text-pulse-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+        <div class="ml-4">
+          <h1 class="text-2xl font-bold text-white">Delete Event</h1>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <p class="text-text-secondary mb-4">
+          Are you sure you want to delete the event <strong class="text-white">"{{ object.title }}"</strong>? This action cannot be undone.
+        </p>
+        
+        {% if object.registrations.count > 0 %}
+        <div class="bg-pulse-orange/20 border border-pulse-orange/30 rounded-pulse-lg p-4 mb-4">
+          <p class="text-sm text-pulse-orange">
+            <strong>Warning:</strong> This event has {{ object.registrations.count }} registration(s). All registrations will be deleted along with this event.
+          </p>
+        </div>
+        {% endif %}
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="flex justify-end space-x-3">
+          <a href="{% url 'event-detail' object.pk %}" class="px-6 py-2 border border-pulse-blue/30 rounded-pulse text-text-secondary hover:bg-pulse-navyLighter/80 transition-colors">
+            Cancel
+          </a>
+          <button type="submit" class="px-6 py-2 bg-pulse-red text-white rounded-pulse hover:opacity-90 transition-colors shadow-pulse-sm">
+            Delete Event
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

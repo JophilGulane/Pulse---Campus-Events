@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}My Registrations - Pulse{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between animate-fadeIn">
+      <div>
+        <h1 class="text-4xl md:text-5xl font-display font-extrabold pulse-gradient-text">
+          My Registrations
+        </h1>
+        <p class="mt-2 text-text-muted">View and manage your event registrations</p>
+      </div>
+      <a href="{% url 'profile' %}" class="px-4 py-2 bg-pulse-navyLight rounded-pulse shadow-pulse-sm border border-pulse-blue/20 hover:bg-pulse-navyLighter transition-shadow text-white hover:text-pulse-blue">
+        View Profile
+      </a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-pulse-navyLight rounded-pulse shadow-pulse border border-pulse-blue/20 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-text-muted">Total Registrations</p>
+            <p class="text-3xl font-bold pulse-gradient-text mt-2">{{ total_registrations }}</p>
+          </div>
+          <div class="w-12 h-12 bg-pulse-blue/20 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-pulse-navyLight rounded-pulse shadow-pulse border border-pulse-blue/20 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-text-muted">Events Attended</p>
+            <p class="text-3xl font-bold pulse-gradient-text mt-2">{{ attended_count }}</p>
+          </div>
+          <div class="w-12 h-12 bg-pulse-orange/20 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-pulse-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-pulse-navyLight rounded-pulse shadow-pulse border border-pulse-blue/20 p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-text-muted">Upcoming Events</p>
+            <p class="text-3xl font-bold pulse-gradient-text mt-2">{{ upcoming_count|length }}</p>
+          </div>
+          <div class="w-12 h-12 bg-pulse-purple/20 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="bg-pulse-navyLight rounded-pulse shadow-pulse border border-pulse-blue/20 p-6 mb-6">
+      <div class="flex flex-wrap gap-2">
+        <a href="?status=all" class="px-4 py-2 rounded-pulse {% if current_filter == 'all' or not current_filter %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white hover:bg-pulse-navyLight border border-pulse-blue/20{% endif %} transition-colors">
+          All
+        </a>
+        <a href="?status=PRE" class="px-4 py-2 rounded-pulse {% if current_filter == 'PRE' %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white hover:bg-pulse-navyLight border border-pulse-blue/20{% endif %} transition-colors">
+          Pre-registered
+        </a>
+        <a href="?status=CONFIRMED" class="px-4 py-2 rounded-pulse {% if current_filter == 'CONFIRMED' %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white hover:bg-pulse-navyLight border border-pulse-blue/20{% endif %} transition-colors">
+          Confirmed
+        </a>
+        <a href="?status=ATTENDED" class="px-4 py-2 rounded-pulse {% if current_filter == 'ATTENDED' %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white hover:bg-pulse-navyLight border border-pulse-blue/20{% endif %} transition-colors">
+          Attended
+        </a>
+        <a href="?status=CANCELLED" class="px-4 py-2 rounded-pulse {% if current_filter == 'CANCELLED' %}bg-pulse-gradient text-white shadow-pulse-sm{% else %}bg-pulse-navyLighter text-white hover:bg-pulse-navyLight border border-pulse-blue/20{% endif %} transition-colors">
+          Cancelled
+        </a>
+      </div>
+    </div>
+
+    <!-- Registrations List -->
+    <div class="bg-pulse-navyLight rounded-pulse shadow-pulse border border-pulse-blue/20 overflow-hidden">
+      {% if registrations %}
+      <div class="divide-y divide-pulse-blue/20">
+        {% for registration in registrations %}
+        <div class="p-6 hover:bg-pulse-navyLighter/50 transition-colors">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex items-start gap-4">
+                {% if registration.event.image %}
+                  <img src="{{ registration.event.image.url }}" alt="{{ registration.event.title }}" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
+                {% else %}
+                  <div class="w-20 h-20 rounded-pulse bg-pulse-gradient flex items-center justify-center flex-shrink-0">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                  </div>
+                {% endif %}
+                
+                <div class="flex-1">
+                  <a href="{% url 'event-detail' registration.event.pk %}" class="text-xl font-semibold text-white hover:text-pulse-blue transition-colors">
+                    {{ registration.event.title }}
+                  </a>
+                  <div class="mt-2 flex flex-wrap items-center gap-4 text-sm text-text-muted">
+                    <div class="flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                      {{ registration.event.start_datetime|date:"M d, Y g:i A" }}
+                    </div>
+                    {% if registration.event.venue %}
+                    <div class="flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      </svg>
+                      {{ registration.event.venue }}
+                    </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+              <span class="px-3 py-1 rounded-full text-sm font-medium border
+                {% if registration.status == 'PRE' %}bg-pulse-blue/20 text-pulse-blue border-pulse-blue/30
+                {% elif registration.status == 'CONFIRMED' %}bg-pulse-orange/20 text-pulse-orange border-pulse-orange/30
+                {% elif registration.status == 'ATTENDED' %}bg-pulse-orange/20 text-pulse-orange border-pulse-orange/30
+                {% elif registration.status == 'CANCELLED' %}bg-pulse-orange/20 text-pulse-orange border-pulse-orange/30
+                {% else %}bg-pulse-blue/20 text-text-muted border-pulse-blue/30{% endif %}">
+                {{ registration.get_status_display }}
+              </span>
+              
+              <a href="{% url 'event-detail' registration.event.pk %}" class="px-4 py-2 bg-pulse-gradient text-white rounded-pulse hover:opacity-90 transition-colors text-sm shadow-pulse-sm">
+                View Event
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <div class="px-6 py-4 bg-pulse-navyLighter border-t border-pulse-blue/20">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-white">
+            Showing page <span class="font-medium">{{ page_obj.number }}</span> of <span class="font-medium">{{ page_obj.paginator.num_pages }}</span>
+          </div>
+          <div class="flex space-x-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if current_filter != 'all' %}&status={{ current_filter }}{% endif %}" class="px-4 py-2 bg-pulse-navyLight border border-pulse-blue/20 rounded-pulse text-sm font-medium text-white hover:bg-pulse-navyLighter">
+              Previous
+            </a>
+            {% else %}
+            <span class="px-4 py-2 bg-pulse-navyLighter border border-pulse-blue/20 rounded-pulse text-sm font-medium text-text-muted cursor-not-allowed">
+              Previous
+            </span>
+            {% endif %}
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if current_filter != 'all' %}&status={{ current_filter }}{% endif %}" class="px-4 py-2 bg-pulse-navyLight border border-pulse-blue/20 rounded-pulse text-sm font-medium text-white hover:bg-pulse-navyLighter">
+              Next
+            </a>
+            {% else %}
+            <span class="px-4 py-2 bg-pulse-navyLighter border border-pulse-blue/20 rounded-pulse text-sm font-medium text-text-muted cursor-not-allowed">
+              Next
+            </span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      
+      {% else %}
+      <div class="p-12 text-center">
+        <svg class="w-16 h-16 text-text-muted mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <p class="text-text-muted text-lg">No registrations found{% if current_filter != 'all' %} for this filter{% endif %}.</p>
+        <a href="{% url 'event-list' %}" class="mt-4 inline-block px-6 py-3 bg-pulse-gradient text-white rounded-pulse hover:opacity-90 transition-colors shadow-pulse-sm">
+          Browse Events
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+</style>
+{% endblock %}
+

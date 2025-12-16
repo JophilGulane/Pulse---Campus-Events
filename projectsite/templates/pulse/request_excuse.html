@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Request Excuse - {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy py-8">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header Section -->
+    <div class="mb-8 animate-fadeIn">
+      <a href="{% url 'event-detail' event.pk %}" 
+         class="inline-flex items-center text-pulse-blue hover:text-pulse-blue/80 font-medium mb-4 transition-colors group">
+        <svg class="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to Event
+      </a>
+      
+      <div class="flex items-center gap-4 mb-2">
+        <div class="p-3 bg-pulse-gradient rounded-pulse-lg shadow-pulse-sm">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-4xl md:text-5xl font-display font-extrabold pulse-gradient-text">
+            Request Excuse
+          </h1>
+          <p class="text-text-secondary mt-1">Request an excuse for missing mandatory attendance at <strong class="text-white">{{ event.title }}</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse overflow-hidden animate-slideUp border border-pulse-blue/20">
+      <form method="post" class="divide-y divide-pulse-blue/20">
+        {% csrf_token %}
+        
+        <div class="p-8 space-y-6">
+          <!-- Event Info -->
+          <div class="bg-pulse-blue/20 rounded-pulse-lg p-6 border border-pulse-blue/30">
+            <div class="flex items-start gap-4">
+              <div class="p-2 bg-pulse-blue/30 rounded-pulse">
+                <svg class="w-6 h-6 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-semibold text-white mb-1">{{ event.title }}</h3>
+                <p class="text-sm text-text-secondary">
+                  <span class="inline-flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    {{ event.start_datetime|date:"F d, Y" }} at {{ event.start_datetime|date:"g:i A" }}
+                  </span>
+                </p>
+                {% if event.organization %}
+                <p class="text-xs text-text-muted mt-1">{{ event.organization.name }}</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Attendance Type -->
+          <div class="space-y-2">
+            <label for="{{ form.attendance_type.id_for_label }}" class="block text-sm font-semibold text-text-secondary flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+              {{ form.attendance_type.label }}
+            </label>
+            {% render_field form.attendance_type class="w-full px-4 py-3 border border-pulse-blue/30 rounded-pulse focus:ring-2 focus:ring-pulse-orange focus:border-pulse-orange transition-all bg-pulse-navyLighter text-white" %}
+            {% if form.attendance_type.errors %}
+              <div class="text-pulse-red text-sm mt-1 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                {{ form.attendance_type.errors.0 }}
+              </div>
+            {% endif %}
+            {% if form.attendance_type.help_text %}
+              <p class="text-xs text-text-muted mt-1 flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                {{ form.attendance_type.help_text }}
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- Reason -->
+          <div class="space-y-2">
+            <label for="{{ form.reason.id_for_label }}" class="block text-sm font-semibold text-text-secondary flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              {{ form.reason.label }}
+            </label>
+            {% render_field form.reason class="w-full px-4 py-3 border border-pulse-blue/30 rounded-pulse focus:ring-2 focus:ring-pulse-orange focus:border-pulse-orange transition-all bg-pulse-navyLighter text-white resize-none placeholder:text-text-muted" %}
+            {% if form.reason.errors %}
+              <div class="text-pulse-red text-sm mt-1 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                {{ form.reason.errors.0 }}
+              </div>
+            {% endif %}
+            {% if form.reason.help_text %}
+              <p class="text-xs text-text-muted mt-1 flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                {{ form.reason.help_text }}
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- Proof Link -->
+          <div class="space-y-2">
+            <label for="{{ form.proof_link.id_for_label }}" class="block text-sm font-semibold text-text-secondary flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+              </svg>
+              {{ form.proof_link.label }}
+            </label>
+            {% render_field form.proof_link class="w-full px-4 py-3 border border-pulse-blue/30 rounded-pulse focus:ring-2 focus:ring-pulse-orange focus:border-pulse-orange transition-all bg-pulse-navyLighter text-white placeholder:text-text-muted" %}
+            {% if form.proof_link.errors %}
+              <div class="text-pulse-red text-sm mt-1 flex items-center gap-1">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                {{ form.proof_link.errors.0 }}
+              </div>
+            {% endif %}
+            {% if form.proof_link.help_text %}
+              <p class="text-xs text-text-muted mt-1 flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                {{ form.proof_link.help_text }}
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- Info Box -->
+          <div class="bg-pulse-orange/20 border border-pulse-orange/30 rounded-pulse-lg p-4">
+            <div class="flex items-start gap-3">
+              <svg class="w-5 h-5 text-pulse-orange flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+              </svg>
+              <div class="text-sm text-pulse-orange">
+                <p class="font-semibold mb-1">Important Information</p>
+                <p>Your excuse request will be reviewed by an organizer. You will be notified once a decision has been made. Approved excuses will be marked as completed in your attendance record.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="p-8 bg-pulse-navyLighter/50 flex items-center justify-end gap-4 border-t border-pulse-blue/20">
+          <a href="{% url 'event-detail' event.pk %}" 
+             class="px-6 py-3 bg-pulse-navyLighter text-text-secondary rounded-pulse font-semibold hover:bg-pulse-navyLighter/80 transition-colors border border-pulse-blue/20">
+            Cancel
+          </a>
+          <button type="submit" 
+                  class="px-8 py-3 bg-pulse-gradient text-white rounded-pulse font-semibold shadow-pulse-sm hover:opacity-90 transition-all transform hover:scale-105">
+            Submit Request
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

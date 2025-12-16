@@ -1,0 +1,454 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}My Profile - Pulse{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy py-4 sm:py-6 lg:py-8">
+  <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+    <!-- Header -->
+    <div class="mb-4 sm:mb-6 lg:mb-8 animate-fadeIn">
+      <h1 class="text-3xl sm:text-4xl md:text-5xl font-display font-extrabold pulse-gradient-text">
+        My Profile
+      </h1>
+    </div>
+
+    {% if profile %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+      <!-- Profile Card -->
+      <div class="lg:col-span-1">
+        <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm sm:shadow-pulse p-4 sm:p-6 lg:p-8 animate-slideUp border border-pulse-blue/20">
+          <div class="text-center">
+            {% if profile.avatar %}
+              <img src="{{ profile.avatar.url }}" alt="{{ user.get_full_name|default:user.username }}" class="w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 rounded-full mx-auto mb-3 sm:mb-4 object-cover border-2 sm:border-4 border-pulse-blue/50 shadow-pulse-sm">
+            {% else %}
+              <div class="w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 rounded-full mx-auto mb-3 sm:mb-4 bg-pulse-gradient flex items-center justify-center border-2 sm:border-4 border-pulse-blue/50 shadow-pulse-sm">
+                <span class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white">{{ user.first_name.0|default:user.username.0|upper }}</span>
+              </div>
+            {% endif %}
+            
+            <h2 class="text-xl sm:text-2xl font-bold text-white mb-1">{{ user.get_full_name|default:user.username }}</h2>
+            <p class="text-xs sm:text-sm text-text-muted mb-2">@{{ user.username }}</p>
+            
+            <div class="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 mt-2">
+              {% if user.is_superuser %}
+              <span class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-pulse-full text-[10px] sm:text-xs lg:text-sm font-medium bg-pulse-red/20 text-pulse-red border border-pulse-red/30">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4 inline-block mr-0.5 sm:mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+                Super Admin
+              </span>
+              {% endif %}
+              
+              {% if is_org_admin %}
+              <span class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-pulse-full text-[10px] sm:text-xs lg:text-sm font-medium bg-pulse-purple/20 text-pulse-purple border border-pulse-purple/30">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4 inline-block mr-0.5 sm:mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+                Organization Admin
+              </span>
+              {% elif is_org_organizer or profile.role == 'ORGANIZER' %}
+              <span class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-pulse-full text-[10px] sm:text-xs lg:text-sm font-medium bg-pulse-blue/20 text-pulse-blue border border-pulse-blue/30">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4 inline-block mr-0.5 sm:mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                Organizer
+              </span>
+              {% elif profile.role == 'ADMIN' %}
+              <span class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-pulse-full text-[10px] sm:text-xs lg:text-sm font-medium bg-pulse-purple/20 text-pulse-purple border border-pulse-purple/30">
+                <svg class="w-3 h-3 sm:w-4 sm:h-4 inline-block mr-0.5 sm:mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+                Admin
+              </span>
+              {% else %}
+              <span class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-pulse-full text-[10px] sm:text-xs lg:text-sm font-medium bg-pulse-blue/20 text-pulse-blue border border-pulse-blue/30">
+                User
+              </span>
+              {% endif %}
+            </div>
+            
+            {% if profile.course %}
+            <div class="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-pulse-blue/20">
+              <p class="text-xs sm:text-sm text-text-muted">Course: <span class="font-semibold text-white">{{ profile.course }}</span></p>
+              {% if profile.year_level %}
+              <p class="text-xs sm:text-sm text-text-muted mt-1">Year Level: <span class="font-semibold text-white">{{ profile.year_level }}</span></p>
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Points Summary -->
+        <div class="bg-pulse-gradient rounded-pulse-lg shadow-pulse-sm sm:shadow-pulse p-4 sm:p-6 lg:p-8 mt-4 sm:mt-6 text-white animate-slideUp delay-200">
+          <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Points</h3>
+          <div class="text-center">
+            <p class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-1 sm:mb-2">{{ profile.total_points|intcomma }}</p>
+            <p class="text-xs sm:text-sm text-white/80">Total Points</p>
+          </div>
+          
+          <div class="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-white/20 grid grid-cols-2 gap-3 sm:gap-4">
+            <div>
+              <p class="text-xl sm:text-2xl font-bold">{{ attended_count }}</p>
+              <p class="text-xs sm:text-sm text-white/80">Events Attended</p>
+            </div>
+            <div>
+              <p class="text-xl sm:text-2xl font-bold">{{ total_registrations }}</p>
+              <p class="text-xs sm:text-sm text-white/80">Registrations</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR Code Quick Access -->
+        <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm sm:shadow-pulse p-4 sm:p-6 mt-4 sm:mt-6 animate-slideUp delay-400 border border-pulse-blue/20">
+          <div class="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-1.5 sm:gap-2">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+              </svg>
+              My QR Code
+            </h3>
+          </div>
+          <p class="text-xs sm:text-sm text-text-muted mb-3 sm:mb-4">Show your QR code to organizers for event attendance</p>
+          <a href="{% url 'my-qr-code' %}" class="block w-full px-3 sm:px-4 py-2 sm:py-3 bg-pulse-gradient text-white rounded-pulse hover:opacity-90 transition-all font-medium text-center flex items-center justify-center gap-1.5 sm:gap-2 shadow-pulse-sm hover:shadow-pulse transform hover:scale-105 text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            View QR Code
+          </a>
+        </div>
+
+        <!-- Settings -->
+        <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm sm:shadow-pulse p-4 sm:p-6 mt-4 sm:mt-6 animate-slideUp delay-500 border border-pulse-blue/20">
+          <div class="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-1.5 sm:gap-2">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-orange flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              Settings
+            </h3>
+          </div>
+          <div class="space-y-2 sm:space-y-3">
+            <a href="{% url 'change-username' %}" class="block w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-pulse-navyLighter/50 hover:bg-pulse-navyLighter text-white rounded-pulse transition-all font-medium text-center flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm border border-pulse-blue/20">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              Change Username
+            </a>
+            <a href="{% url 'change-password' %}" class="block w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-pulse-navyLighter/50 hover:bg-pulse-navyLighter text-white rounded-pulse transition-all font-medium text-center flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm border border-pulse-blue/20">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+              Change Password
+            </a>
+            <a href="{% url 'change-avatar' %}" class="block w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-pulse-navyLighter/50 hover:bg-pulse-navyLighter text-white rounded-pulse transition-all font-medium text-center flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm border border-pulse-blue/20">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              Change Profile Picture
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="lg:col-span-2 space-y-4 sm:space-y-6">
+        <!-- Points Transactions -->
+        <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm sm:shadow-pulse p-4 sm:p-6 lg:p-8 animate-slideUp delay-300 border border-pulse-blue/20">
+          <h3 class="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6 flex items-center gap-1.5 sm:gap-2">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-pulse-purple flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+            </svg>
+            Points History
+          </h3>
+          
+          {% if points_transactions %}
+          <div class="space-y-2 sm:space-y-3 max-h-64 sm:max-h-96 overflow-y-auto">
+            {% for transaction in points_transactions %}
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 p-3 sm:p-4 bg-pulse-navyLighter rounded-pulse hover:bg-pulse-navyLighter/80 transition-colors">
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-white text-sm sm:text-base truncate">{{ transaction.reason|default:"Points Awarded" }}</p>
+                {% if transaction.event %}
+                <p class="text-xs sm:text-sm text-text-muted truncate">{{ transaction.event.title }}</p>
+                {% endif %}
+                <p class="text-[10px] sm:text-xs text-text-muted mt-0.5 sm:mt-1">{{ transaction.timestamp|date:"M d, Y g:i A" }}</p>
+              </div>
+              <div class="text-left sm:text-right flex-shrink-0">
+                <p class="text-base sm:text-lg font-bold {% if transaction.amount >= 0 %}text-pulse-green{% else %}text-pulse-red{% endif %}">
+                  {% if transaction.amount >= 0 %}+{% endif %}{{ transaction.amount|intcomma }}
+                </p>
+                <p class="text-[10px] sm:text-xs text-text-muted">Balance: {{ transaction.balance_after|intcomma }}</p>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-text-muted text-center py-6 sm:py-8 text-sm sm:text-base">No points transactions yet.</p>
+          {% endif %}
+        </div>
+
+        <!-- Mandatory Event Points -->
+        {% if mandatory_points_by_org %}
+        <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm sm:shadow-pulse p-4 sm:p-6 lg:p-8 animate-slideUp delay-300 border border-pulse-blue/20">
+          <h3 class="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-1.5 sm:gap-2">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Mandatory Event Points
+          </h3>
+          <p class="text-xs sm:text-sm text-text-muted mb-4 sm:mb-6">Points earned from mandatory events within your organizations.</p>
+          <div class="space-y-3 sm:space-y-4">
+            {% for entry in mandatory_points_by_org %}
+            <div class="p-3 sm:p-4 border border-pulse-blue/20 rounded-pulse hover:shadow-pulse-sm transition-shadow bg-pulse-navyLighter/50">
+              <div class="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="min-w-0 flex-1">
+                  <p class="text-base sm:text-lg font-semibold text-white truncate">{{ entry.organization.name }}</p>
+                  <p class="text-[10px] sm:text-xs text-text-muted mt-0.5 sm:mt-1">{{ entry.total_mandatory_events }} mandatory events</p>
+                </div>
+                <div class="flex flex-col items-start sm:items-end gap-2 sm:gap-3 sm:text-right">
+                  <div class="flex items-center gap-4 sm:gap-6">
+                    <div>
+                      <p class="text-[10px] sm:text-xs text-text-muted uppercase tracking-wide">Points</p>
+                      <p class="text-xl sm:text-2xl font-bold text-pulse-purple">{{ entry.points|intcomma }}</p>
+                    </div>
+                    <div>
+                      <p class="text-[10px] sm:text-xs text-text-muted uppercase tracking-wide">Scans</p>
+                      <p class="text-lg sm:text-xl font-semibold text-white">{{ entry.scans }}</p>
+                    </div>
+                  </div>
+                  <a href="{% url 'organization-mandatory-summary' entry.organization.pk %}"
+                     class="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-pulse-full bg-pulse-blue/20 text-pulse-blue text-[10px] sm:text-xs font-medium hover:bg-pulse-blue/30 transition-colors whitespace-nowrap">
+                    <svg class="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                    View breakdown
+                  </a>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Organization Memberships -->
+        <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm sm:shadow-pulse p-4 sm:p-6 lg:p-8 animate-slideUp delay-400 border border-pulse-blue/20">
+          <div class="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
+            <h3 class="text-xl sm:text-2xl font-bold text-white flex items-center gap-1.5 sm:gap-2">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-pulse-purple flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+              Organizations
+            </h3>
+            <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
+              <a href="{% url 'join-organization-code' %}" 
+                 class="px-3 sm:px-4 py-1.5 sm:py-2 bg-pulse-gradient text-white rounded-pulse hover:opacity-90 transition-all text-xs sm:text-sm font-medium text-center shadow-pulse-sm whitespace-nowrap">
+                Join Organization
+              </a>
+            </div>
+          </div>
+          
+          {% if user.organization_memberships.all %}
+          <div class="space-y-3 sm:space-y-4">
+            {% for membership in user.organization_memberships.all %}
+            <div class="p-3 sm:p-4 border border-pulse-blue/20 rounded-pulse hover:shadow-pulse-sm transition-shadow bg-pulse-navyLighter/50">
+              <div class="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+                    {% if membership.role == 'ADMIN' or membership.role == 'ORGANIZER' %}
+                    <a href="{% url 'organization-detail-organizer' membership.organization.pk %}" class="text-base sm:text-lg font-semibold text-white hover:text-pulse-blue truncate transition-colors">
+                      {{ membership.organization.name }}
+                    </a>
+                    {% else %}
+                    <h4 class="text-base sm:text-lg font-semibold text-white truncate">{{ membership.organization.name }}</h4>
+                    {% endif %}
+                    {% if membership.role == 'ADMIN' %}
+                    <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-pulse-full bg-pulse-purple/20 text-pulse-purple border border-pulse-purple/30 whitespace-nowrap">
+                      Admin
+                    </span>
+                    {% elif membership.role == 'ORGANIZER' %}
+                    <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-pulse-full bg-pulse-blue/20 text-pulse-blue border border-pulse-blue/30 whitespace-nowrap">
+                      Organizer
+                    </span>
+                    {% else %}
+                    <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-pulse-full bg-pulse-blue/20 text-pulse-blue border border-pulse-blue/30 whitespace-nowrap">
+                      Member
+                    </span>
+                    {% endif %}
+                    {% if membership.organization.status == 'PENDING' %}
+                    <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-pulse-full bg-pulse-orange/20 text-pulse-orange border border-pulse-orange/30 whitespace-nowrap">
+                      Pending Approval
+                    </span>
+                    {% elif membership.organization.status == 'APPROVED' %}
+                    <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-pulse-full bg-pulse-green/20 text-pulse-green border border-pulse-green/30 whitespace-nowrap">
+                      Active
+                    </span>
+                    {% elif membership.organization.status == 'REJECTED' %}
+                    <span class="px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-pulse-full bg-pulse-red/20 text-pulse-red border border-pulse-red/30 whitespace-nowrap">
+                      Rejected
+                    </span>
+                    {% endif %}
+                  </div>
+                  {% if membership.organization.description %}
+                  <p class="text-xs sm:text-sm text-text-muted mb-1 sm:mb-2 line-clamp-2">{{ membership.organization.description|truncatewords:20 }}</p>
+                  {% endif %}
+                  <p class="text-[10px] sm:text-xs text-text-muted">Joined {{ membership.joined_at|date:"M d, Y" }}</p>
+                </div>
+                <form method="post" action="{% url 'leave-organization' membership.organization.pk %}" class="sm:ml-4 mt-2 sm:mt-0 flex-shrink-0">
+                  {% csrf_token %}
+                  <button type="submit" 
+                          class="w-full sm:w-auto px-3 sm:px-4 py-1.5 sm:py-2 bg-pulse-red/20 text-pulse-red rounded-pulse hover:bg-pulse-red/30 transition-colors text-xs sm:text-sm font-medium border border-pulse-red/30 whitespace-nowrap"
+                          onclick="return confirm('Leave {{ membership.organization.name }}?')">
+                    Leave
+                  </button>
+                </form>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-6 sm:py-8">
+            <svg class="w-12 h-12 sm:w-16 sm:h-16 text-text-muted mx-auto mb-3 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+            <p class="text-text-muted mb-3 sm:mb-4 text-sm sm:text-base">You're not a member of any organizations yet.</p>
+            <a href="{% url 'join-organization-code' %}" 
+               class="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 bg-pulse-gradient text-white rounded-pulse hover:opacity-90 transition-all font-medium shadow-pulse-sm text-sm sm:text-base">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              Join an Organization
+            </a>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Upcoming Registrations -->
+        {% if upcoming_registrations %}
+        <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm sm:shadow-pulse p-4 sm:p-6 lg:p-8 animate-slideUp delay-500 border border-pulse-blue/20">
+          <h3 class="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6 flex items-center gap-1.5 sm:gap-2">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            Upcoming Events
+          </h3>
+          
+          <div class="space-y-3 sm:space-y-4">
+            {% for registration in upcoming_registrations %}
+            <div class="p-3 sm:p-4 border border-pulse-blue/20 rounded-pulse hover:shadow-pulse-sm transition-shadow bg-pulse-navyLighter/50">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                <div class="flex-1 min-w-0">
+                  <a href="{% url 'event-detail' registration.event.pk %}" class="text-base sm:text-lg font-semibold text-white hover:text-pulse-blue block truncate">
+                    {{ registration.event.title }}
+                  </a>
+                  <p class="text-xs sm:text-sm text-text-muted mt-0.5 sm:mt-1">{{ registration.event.start_datetime|date:"F d, Y g:i A" }}</p>
+                  <span class="inline-block mt-1.5 sm:mt-2 px-1.5 sm:px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-medium rounded-pulse-full 
+                    {% if registration.status == 'PRE' %}bg-pulse-blue/20 text-pulse-blue border border-pulse-blue/30
+                    {% elif registration.status == 'CONFIRMED' %}bg-pulse-green/20 text-pulse-green border border-pulse-green/30
+                    {% else %}bg-pulse-navyLighter text-text-muted border border-pulse-blue/20{% endif %}">
+                    {{ registration.get_status_display }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          
+          <div class="mt-4 sm:mt-6 text-center">
+            <a href="{% url 'my-registrations' %}" class="text-pulse-blue hover:text-pulse-blue/80 font-medium text-sm sm:text-base">
+              View all registrations →
+            </a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm sm:shadow-pulse p-4 sm:p-6 lg:p-8 text-center border border-pulse-blue/20">
+      <p class="text-text-muted text-sm sm:text-base">Profile not found.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Organization Creation Success Popup -->
+{% if org_created_name %}
+<div id="org-created-popup" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm animate-fadeIn p-3 sm:p-4">
+  <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse-sm sm:shadow-pulse max-w-md w-full mx-auto transform transition-all animate-slideUp border border-pulse-blue/20">
+    <div class="p-4 sm:p-6 md:p-8">
+      <!-- Success Icon -->
+      <div class="flex justify-center mb-3 sm:mb-4">
+        <div class="w-12 h-12 sm:w-16 sm:h-16 bg-pulse-green/20 rounded-full flex items-center justify-center border border-pulse-green/30">
+          <svg class="w-8 h-8 sm:w-10 sm:h-10 text-pulse-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+      </div>
+      
+      <!-- Message -->
+      <div class="text-center mb-4 sm:mb-6">
+        <h3 class="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">Organization Request Submitted!</h3>
+        <p class="text-xs sm:text-sm text-text-secondary leading-relaxed">
+          Organization request <span class="font-semibold text-pulse-purple">"{{ org_created_name }}"</span> submitted successfully! It will be reviewed by a developer. Please contact email at 
+          <a href="mailto:jophilgulane.me@gmail.com" class="text-pulse-blue hover:text-pulse-blue/80 font-medium underline break-all">jophilgulane.me@gmail.com</a>.
+        </p>
+      </div>
+      
+      <!-- Close Button -->
+      <button onclick="closeOrgPopup()" class="w-full px-4 sm:px-6 py-2 sm:py-3 bg-pulse-gradient text-white rounded-pulse hover:opacity-90 transition-all font-medium shadow-pulse-sm hover:shadow-pulse transform hover:scale-105 text-sm sm:text-base">
+        Got it!
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+function closeOrgPopup() {
+  const popup = document.getElementById('org-created-popup');
+  if (popup) {
+    popup.style.opacity = '0';
+    popup.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      popup.remove();
+    }, 300);
+  }
+}
+
+// Close on outside click
+document.getElementById('org-created-popup')?.addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeOrgPopup();
+  }
+});
+
+// Close on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeOrgPopup();
+  }
+});
+</script>
+{% endif %}
+
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+  .animate-slideUp { animation: slideUp 0.6s ease-out forwards; opacity: 0; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+  .delay-400 { animation-delay: 0.4s; }
+  .delay-400 { animation-delay: 0.4s; }
+  .delay-500 { animation-delay: 0.5s; }
+</style>
+{% endblock %}
+

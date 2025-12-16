@@ -1,0 +1,1506 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Pulse{% endblock %}</title>
+
+  <!-- Tailwind CDN with Pulse theme config -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pulse: {
+              blue: '#0073E6',
+              purple: '#7C00E6',
+              orange: '#FF7200',
+              navy: '#0A0F3A',
+              navyLight: '#141B4D',
+              navyLighter: '#1E2560',
+            },
+          },
+          backgroundImage: {
+            'pulse-gradient': 'linear-gradient(135deg, #0073E6 0%, #7C00E6 50%, #FF7200 100%)',
+            'pulse-gradient-horizontal': 'linear-gradient(90deg, #0073E6 0%, #7C00E6 50%, #FF7200 100%)',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'pulse': '0 0 20px rgba(0, 115, 230, 0.4), 0 0 40px rgba(124, 0, 230, 0.2), 0 0 60px rgba(255, 114, 0, 0.1)',
+            'pulse-sm': '0 0 10px rgba(0, 115, 230, 0.3), 0 0 20px rgba(124, 0, 230, 0.15)',
+            'pulse-lg': '0 0 30px rgba(0, 115, 230, 0.5), 0 0 60px rgba(124, 0, 230, 0.3), 0 0 90px rgba(255, 114, 0, 0.2)',
+            'glow-blue': '0 0 20px rgba(0, 115, 230, 0.6)',
+            'glow-purple': '0 0 20px rgba(124, 0, 230, 0.6)',
+            'glow-orange': '0 0 20px rgba(255, 114, 0, 0.6)',
+          },
+          keyframes: {
+            'gradient-shift': {
+              '0%, 100%': { 'background-position': '0% 50%' },
+              '50%': { 'background-position': '100% 50%' },
+            },
+            'float': {
+              '0%, 100%': { transform: 'translateY(0px) translateX(0px) rotate(0deg)' },
+              '33%': { transform: 'translateY(-20px) translateX(10px) rotate(2deg)' },
+              '66%': { transform: 'translateY(10px) translateX(-10px) rotate(-2deg)' },
+            },
+            'breathe': {
+              '0%, 100%': { transform: 'scale(1)', opacity: '0.6' },
+              '50%': { transform: 'scale(1.1)', opacity: '0.8' },
+            },
+            'glow-pulse': {
+              '0%, 100%': { 
+                'box-shadow': '0 0 20px rgba(0, 115, 230, 0.4), 0 0 40px rgba(124, 0, 230, 0.2), 0 0 60px rgba(255, 114, 0, 0.1)'
+              },
+              '50%': { 
+                'box-shadow': '0 0 30px rgba(0, 115, 230, 0.6), 0 0 60px rgba(124, 0, 230, 0.4), 0 0 90px rgba(255, 114, 0, 0.2)'
+              },
+            },
+            'slide-in-up': {
+              'from': { opacity: '0', transform: 'translateY(40px)' },
+              'to': { opacity: '1', transform: 'translateY(0)' },
+            },
+            'scale-in': {
+              'from': { opacity: '0', transform: 'scale(0.9)' },
+              'to': { opacity: '1', transform: 'scale(1)' },
+            },
+            'wave': {
+              '0%, 100%': { transform: 'translateX(0) translateY(0)' },
+              '25%': { transform: 'translateX(10px) translateY(-10px)' },
+              '50%': { transform: 'translateX(-5px) translateY(5px)' },
+              '75%': { transform: 'translateX(-10px) translateY(-5px)' },
+            },
+          },
+          animation: {
+            'gradient-shift': 'gradient-shift 15s ease infinite',
+            'float': 'float 20s ease-in-out infinite',
+            'breathe': 'breathe 8s ease-in-out infinite',
+            'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
+            'slide-in-up': 'slide-in-up 0.8s ease-out forwards',
+            'scale-in': 'scale-in 0.6s ease-out forwards',
+            'wave': 'wave 25s ease-in-out infinite',
+          },
+        },
+      },
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap"
+    rel="stylesheet">
+
+  {% block head_extra %}{% endblock %}
+
+  <style>
+    /* PULSE Theme - Dark Mode First */
+    body {
+      background-color: #0A0F3A;
+      color: #FFFFFF;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    .pulse-gradient-text {
+      background: linear-gradient(135deg, #0073E6 0%, #7C00E6 50%, #FF7200 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Mobile-first compact overrides */
+    @media (max-width: 640px) {
+      body {
+        font-size: 0.92rem;
+        line-height: 1.4;
+      }
+
+      h1,
+      .text-4xl,
+      .text-5xl,
+      .text-6xl {
+        font-size: 1.65rem !important;
+        line-height: 1.2 !important;
+      }
+
+      h2,
+      .text-3xl {
+        font-size: 1.35rem !important;
+      }
+
+      h3,
+      .text-2xl {
+        font-size: 1.2rem !important;
+      }
+
+      header .h-20 {
+        height: 3.5rem !important;
+      }
+
+      .px-8 {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+      }
+
+      .px-6 {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+      }
+
+      .px-5 {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+      }
+
+      .px-4 {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+      }
+
+      .px-3 {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+      }
+
+      .py-12 {
+        padding-top: 1.5rem !important;
+        padding-bottom: 1.5rem !important;
+      }
+
+      .py-10 {
+        padding-top: 1.25rem !important;
+        padding-bottom: 1.25rem !important;
+      }
+
+      .py-8 {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+      }
+
+      .py-6 {
+        padding-top: 0.75rem !important;
+        padding-bottom: 0.75rem !important;
+      }
+
+      .py-4 {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+      }
+
+      .mb-8 {
+        margin-bottom: 1.25rem !important;
+      }
+
+      .mb-6 {
+        margin-bottom: 0.75rem !important;
+      }
+
+      .gap-6 {
+        gap: 0.75rem !important;
+      }
+
+      .gap-8 {
+        gap: 1rem !important;
+      }
+
+      .space-y-8> :not([hidden])~ :not([hidden]) {
+        --tw-space-y-reverse: 0;
+        margin-top: calc(0.9rem * calc(1 - var(--tw-space-y-reverse))) !important;
+        margin-bottom: calc(0.9rem * var(--tw-space-y-reverse)) !important;
+      }
+
+      .space-y-6> :not([hidden])~ :not([hidden]) {
+        --tw-space-y-reverse: 0;
+        margin-top: calc(0.7rem * calc(1 - var(--tw-space-y-reverse))) !important;
+        margin-bottom: calc(0.7rem * var(--tw-space-y-reverse)) !important;
+      }
+
+      .grid.gap-6 {
+        gap: 1rem !important;
+      }
+
+      .grid.gap-8 {
+        gap: 1.25rem !important;
+      }
+
+      .rounded-2xl {
+        border-radius: 0.9rem;
+      }
+
+      .rounded-xl {
+        border-radius: 0.75rem;
+      }
+
+      .shadow-xl,
+      .shadow-lg {
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08) !important;
+      }
+
+      input,
+      select,
+      textarea {
+        padding: 0.55rem 0.75rem !important;
+        font-size: 0.92rem !important;
+      }
+
+      button,
+      .btn {
+        padding-top: 0.55rem !important;
+        padding-bottom: 0.55rem !important;
+        padding-left: 0.9rem !important;
+        padding-right: 0.9rem !important;
+        font-size: 0.95rem !important;
+      }
+
+      .table-row td,
+      .table-row th,
+      table td,
+      table th {
+        padding: 0.55rem 0.65rem !important;
+      }
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+
+      main>div,
+      section>div {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+
+      .max-w-7xl,
+      .max-w-5xl,
+      .max-w-4xl {
+        width: 100%;
+      }
+
+      /* Mobile-First Card Styles */
+      .mobile-card {
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+
+      /* Ensure no horizontal overflow */
+      * {
+        max-width: 100%;
+      }
+
+      img, video {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+
+    /* Mobile-First Global Styles */
+    @media (min-width: 320px) and (max-width: 640px) {
+      .rounded-2xl {
+        border-radius: 1rem;
+      }
+
+      .rounded-xl {
+        border-radius: 0.875rem;
+      }
+
+      .rounded-lg {
+        border-radius: 0.75rem;
+      }
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-pulse-navy text-white">
+
+  <!-- NAVBAR -->
+  <header
+    class="sticky top-0 z-50 bg-pulse-navyLight/90 backdrop-blur-lg border-b border-pulse-blue/20 shadow-pulse-sm">
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+      <div class="flex justify-between items-center h-[4.5rem] sm:h-16 lg:h-20">
+        <!-- Logo -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <a href="{% url 'landing' %}" class="flex items-center group">
+            <img src="{% static 'image/pulse-logo.png' %}" alt="PULSE Campus Events"
+              class="h-8 sm:h-10 lg:h-12 w-auto transition-all group-hover:scale-105" />
+          </a>
+          <div class="block">
+            <span class="font-display font-bold text-xl sm:text-2xl lg:text-3xl pulse-gradient-text">
+              PULSE
+            </span>
+            <p class="text-sm sm:text-base lg:text-lg text-text-muted -mt-1">
+              Campus Events
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden lg:flex items-center space-x-1">
+          <!-- Main Navigation Links -->
+          {% if user.is_authenticated %}
+          <div class="flex items-center space-x-1 mr-4">
+            <a href="{% url 'event-list' %}"
+              class="px-4 py-2.5 rounded-pulse text-sm font-medium text-text-secondary hover:text-pulse-blue hover:bg-pulse-navyLighter transition-all flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              Events
+            </a>
+            <a href="{% url 'announcements-newsfeed' %}"
+              class="px-4 py-2.5 rounded-pulse text-sm font-medium text-text-secondary hover:text-pulse-blue hover:bg-pulse-navyLighter transition-all flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+                </path>
+              </svg>
+              Announcements
+            </a>
+            <a href="{% url 'leaderboard' %}"
+              class="px-4 py-2.5 rounded-pulse text-sm font-medium text-text-secondary hover:text-pulse-blue hover:bg-pulse-navyLighter transition-all flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z">
+                </path>
+              </svg>
+              Leaderboard
+            </a>
+          </div>
+          {% endif %}
+
+          <!-- User Menu / Auth Buttons (Desktop) -->
+          {% if user.is_authenticated %}
+          <div class="relative group hidden lg:block" id="user-menu-container">
+            <button id="user-menu-button"
+              class="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2 rounded-pulse hover:bg-pulse-navyLighter transition-all">
+              {% if user.profile and user.profile.avatar %}
+              <img src="{{ user.profile.avatar.url }}" 
+                   alt="{{ user.get_full_name|default:user.username }}"
+                   class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-pulse-blue/50 shadow-pulse-sm flex-shrink-0">
+              {% else %}
+              <div
+                class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-pulse-gradient flex items-center justify-center text-white font-semibold shadow-pulse-sm flex-shrink-0">
+                {{ user.get_full_name.0|default:user.username.0|upper }}
+              </div>
+              {% endif %}
+              <div class="text-left hidden lg:block">
+                <div class="text-sm font-medium text-white">{{ user.get_full_name|default:user.username }}</div>
+                {% load auth_helpers %}
+                {% is_admin as is_admin_flag %}
+                {% is_organizer as is_organizer_flag %}
+                <div class="text-xs text-text-muted">
+                  {% if user.is_superuser %}
+                  Super Admin
+                  {% elif is_admin_flag %}
+                  Admin
+                  {% elif is_organizer_flag %}
+                  Organizer
+                  {% else %}
+                  Member
+                  {% endif %}
+                </div>
+              </div>
+              <svg class="w-4 h-4 text-text-muted hidden lg:block transition-transform group-hover:rotate-180"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div id="user-menu-dropdown"
+              class="hidden fixed sm:absolute right-2 sm:right-0 top-16 sm:top-auto sm:mt-2 w-[calc(100vw-1rem)] sm:w-64 md:w-72 lg:w-56 bg-pulse-navyLight rounded-pulse-lg shadow-pulse border border-pulse-blue/20 py-2 z-50 max-h-[calc(100vh-5rem)] overflow-y-auto">
+              
+              <!-- Mobile Layout (320-640px) -->
+              <div class="block sm:hidden">
+                <!-- 1. User Profile Section (Top - Centered) -->
+                <div class="px-4 py-4 border-b border-pulse-blue/20 text-center">
+                  {% if user.profile and user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="{{ user.get_full_name|default:user.username }}" 
+                         class="w-16 h-16 rounded-full mx-auto mb-2 object-cover border-2 border-pulse-blue/50">
+                  {% else %}
+                    <div class="w-16 h-16 rounded-full bg-pulse-gradient mx-auto mb-2 flex items-center justify-center border-2 border-pulse-blue/50">
+                      <span class="text-2xl font-bold text-white">{{ user.get_full_name.0|default:user.username.0|upper }}</span>
+                    </div>
+                  {% endif %}
+                  <h3 class="text-sm font-semibold text-white mb-0.5">{{ user.get_full_name|default:user.username }}</h3>
+                  <p class="text-xs text-text-muted">{{ user.email }}</p>
+                </div>
+
+                <!-- 2. Single Main Menu Item (Account) -->
+                <div class="px-2 py-2">
+                  <a href="{% url 'profile' %}"
+                    class="flex items-center gap-3 px-4 py-3 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">Account</span>
+                  </a>
+                </div>
+
+                <!-- 3. Grouped Block (My Profile, My Registrations) -->
+                <div class="px-2 py-1 space-y-1">
+                  <a href="{% url 'profile' %}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">My Profile</span>
+                  </a>
+                  <a href="{% url 'my-registrations' %}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                      </path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">My Registrations</span>
+                  </a>
+                </div>
+
+                {% if user.is_authenticated %}
+                {% load auth_helpers %}
+                {% can_create_event as user_can_create_event %}
+                {% can_manage_announcements as user_can_manage_announcements %}
+                {% is_org_admin as user_is_org_admin %}
+
+                <!-- 4. Additional Standalone Items (Super Admin) -->
+                {% if user.is_superuser %}
+                <div class="px-2 py-1 space-y-1 border-t border-pulse-blue/20 mt-2 pt-2">
+                  <a href="{% url 'user-management' %}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                      </path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">Manage Users</span>
+                  </a>
+                  <a href="{% url 'organization-list' %}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                      </path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">Manage Organizations</span>
+                  </a>
+                  <a href="{% url 'announcement-list' %}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+                      </path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">Manage Announcements</span>
+                  </a>
+                  <a href="{% url 'review-excuses' %}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">Review Excuses</span>
+                  </a>
+                </div>
+                {% endif %}
+
+                <!-- 4. Additional Standalone Items (Admin/Organizer) -->
+                {% if user_can_create_event or user_can_manage_announcements or user_is_org_admin %}
+                <div class="px-2 py-1 space-y-1 border-t border-pulse-blue/20 mt-2 pt-2">
+                  <a href="{% url 'organizer-dashboard' %}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                      </path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">Dashboard</span>
+                  </a>
+                  {% if user_can_manage_announcements %}
+                  <a href="{% url 'announcement-list' %}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+                      </path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">Manage Announcements</span>
+                  </a>
+                  {% endif %}
+                  <a href="{% url 'qr-scanner' %}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z">
+                      </path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">QR Scanner</span>
+                  </a>
+                  <a href="{% url 'review-excuses' %}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">Review Excuses</span>
+                  </a>
+                </div>
+                {% endif %}
+
+                <!-- 4. Additional Standalone Items (Organizations) -->
+                <div class="px-2 py-1 space-y-1 border-t border-pulse-blue/20 mt-2 pt-2">
+                  <a href="{% url 'join-organization-code' %}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z">
+                      </path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">Join Organization</span>
+                  </a>
+                  <a href="{% url 'organization-create' %}"
+                    class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                    <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <span class="text-sm font-medium text-white">Create Organization</span>
+                  </a>
+                </div>
+                {% endif %}
+
+                <!-- 5. Logout Button (Bottom - Full Width) -->
+                <div class="border-t border-pulse-blue/20 mt-2 pt-2 px-2 pb-2">
+                  <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+                    <button type="submit"
+                      class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-pulse bg-pulse-red/20 hover:bg-pulse-red/30 transition-colors text-sm font-medium text-pulse-red border border-pulse-red/30">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
+                      </svg>
+                      <span>Logout</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Desktop Layout (sm and above) -->
+              <div class="hidden sm:block">
+                <a href="{% url 'profile' %}"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">My Profile</span>
+                </a>
+                <a href="{% url 'my-registrations' %}"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">My Registrations</span>
+                </a>
+
+                {% if user.is_authenticated %}
+                {% load auth_helpers %}
+                {% can_create_event as user_can_create_event %}
+                {% can_manage_announcements as user_can_manage_announcements %}
+                {% is_org_admin as user_is_org_admin %}
+
+                <!-- Super Admin Section -->
+                {% if user.is_superuser %}
+                <div class="border-t border-pulse-blue/20 my-1"></div>
+                <div class="px-4 py-2">
+                  <span class="text-xs font-semibold text-pulse-purple uppercase tracking-wider">Super Admin</span>
+                </div>
+                <a href="{% url 'user-management' %}"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Manage Users</span>
+                </a>
+                <a href="{% url 'organization-list' %}"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Manage Organizations</span>
+                </a>
+                <a href="{% url 'announcement-list' %}"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Manage Announcements</span>
+                </a>
+                <a href="{% url 'review-excuses' %}"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Review Excuses</span>
+                </a>
+                {% endif %}
+
+                <!-- Admin/Organizer Section -->
+                {% if user_can_create_event or user_can_manage_announcements or user_is_org_admin %}
+                <div class="border-t border-pulse-blue/20 my-1"></div>
+                <div class="px-4 py-2">
+                  <span class="text-xs font-semibold text-pulse-blue uppercase tracking-wider">Admin/Organizer</span>
+                </div>
+                <a href="{% url 'organizer-dashboard' %}"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Dashboard</span>
+                </a>
+                {% if user_can_manage_announcements %}
+                <a href="{% url 'announcement-list' %}"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Manage Announcements</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'qr-scanner' %}"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">QR Scanner</span>
+                </a>
+                <a href="{% url 'review-excuses' %}"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Review Excuses</span>
+                </a>
+                {% endif %}
+
+                <!-- Organization Section -->
+                <div class="border-t border-pulse-blue/20 my-1"></div>
+                <a href="{% url 'join-organization-code' %}"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Join Organization</span>
+                </a>
+                <a href="{% url 'organization-create' %}"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Create Organization</span>
+                </a>
+                {% endif %}
+                <div class="border-t border-pulse-blue/20 my-1"></div>
+                <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+                  <button type="submit"
+                    class="w-full flex items-center gap-3 px-4 py-3 hover:bg-pulse-navyLighter transition-colors text-left">
+                    <svg class="w-5 h-5 text-pulse-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                      </path>
+                    </svg>
+                    <span class="text-sm font-medium text-pulse-orange">Logout</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="flex items-center gap-3">
+            <a href="{% url 'login' %}"
+              class="px-4 py-2.5 text-sm font-medium text-text-secondary hover:text-pulse-blue transition-colors">
+              Login
+            </a>
+            <a href="{% url 'signup' %}"
+              class="px-5 py-2.5 bg-pulse-gradient text-white rounded-pulse hover:opacity-90 transition-all shadow-pulse-sm hover:shadow-pulse font-medium text-sm">
+              Sign Up
+            </a>
+          </div>
+          {% endif %}
+        </nav>
+
+        <!-- Mobile Menu Button (Only for unauthenticated users) -->
+        {% if not user.is_authenticated %}
+        <div class="lg:hidden">
+          <button id="mobile-menu-button" class="p-2 rounded-pulse hover:bg-pulse-navyLighter transition-colors"
+            aria-label="open menu">
+            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+        </div>
+        {% endif %}
+
+        <!-- User Menu Button (Mobile - Only for authenticated users) -->
+        {% if user.is_authenticated %}
+        <div class="lg:hidden relative" id="user-menu-container-mobile">
+          <button id="user-menu-button-mobile"
+            class="flex items-center gap-2 px-2 py-2 rounded-pulse hover:bg-pulse-navyLighter transition-all">
+            {% if user.profile and user.profile.avatar %}
+            <img src="{{ user.profile.avatar.url }}" 
+                 alt="{{ user.get_full_name|default:user.username }}"
+                 class="w-12 h-12 rounded-full object-cover border-2 border-pulse-blue/50 shadow-pulse-sm flex-shrink-0">
+            {% else %}
+            <div
+              class="w-12 h-12 rounded-full bg-pulse-gradient flex items-center justify-center text-white font-semibold text-lg shadow-pulse-sm flex-shrink-0">
+              {{ user.get_full_name.0|default:user.username.0|upper }}
+            </div>
+            {% endif %}
+          </button>
+          
+          <!-- Mobile User Menu Dropdown (Same content, different positioning) -->
+          <div id="user-menu-dropdown-mobile"
+            class="hidden fixed right-2 top-16 w-[calc(100vw-1rem)] sm:w-64 bg-pulse-navyLight rounded-pulse-lg shadow-pulse border border-pulse-blue/20 py-2 z-50 max-h-[calc(100vh-5rem)] overflow-y-auto">
+            
+            <!-- Mobile Layout Content (Same as desktop dropdown mobile section) -->
+            <div class="block">
+              <!-- 1. User Profile Section (Top - Centered) -->
+              <div class="px-4 py-4 border-b border-pulse-blue/20 text-center">
+                {% if user.profile and user.profile.avatar %}
+                  <img src="{{ user.profile.avatar.url }}" alt="{{ user.get_full_name|default:user.username }}" 
+                       class="w-16 h-16 rounded-full mx-auto mb-2 object-cover border-2 border-pulse-blue/50">
+                {% else %}
+                  <div class="w-16 h-16 rounded-full bg-pulse-gradient mx-auto mb-2 flex items-center justify-center border-2 border-pulse-blue/50">
+                    <span class="text-2xl font-bold text-white">{{ user.get_full_name.0|default:user.username.0|upper }}</span>
+                  </div>
+                {% endif %}
+                <h3 class="text-sm font-semibold text-white mb-0.5">{{ user.get_full_name|default:user.username }}</h3>
+                <p class="text-xs text-text-muted">{{ user.email }}</p>
+              </div>
+
+              <!-- 2. Single Main Menu Item (Account) -->
+              <div class="px-2 py-2">
+                <a href="{% url 'profile' %}"
+                  class="flex items-center gap-3 px-4 py-3 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Account</span>
+                </a>
+              </div>
+
+              <!-- 3. Grouped Block (My Profile, My Registrations) -->
+              <div class="px-2 py-1 space-y-1">
+                <a href="{% url 'profile' %}"
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">My Profile</span>
+                </a>
+                <a href="{% url 'my-registrations' %}"
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">My Registrations</span>
+                </a>
+              </div>
+
+              {% if user.is_authenticated %}
+              {% load auth_helpers %}
+              {% can_create_event as user_can_create_event %}
+              {% can_manage_announcements as user_can_manage_announcements %}
+              {% is_org_admin as user_is_org_admin %}
+
+              <!-- 4. Additional Standalone Items (Super Admin) -->
+              {% if user.is_superuser %}
+              <div class="px-2 py-1 space-y-1 border-t border-pulse-blue/20 mt-2 pt-2">
+                <a href="{% url 'user-management' %}"
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Manage Users</span>
+                </a>
+                <a href="{% url 'organization-list' %}"
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Manage Organizations</span>
+                </a>
+                <a href="{% url 'announcement-list' %}"
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Manage Announcements</span>
+                </a>
+                <a href="{% url 'review-excuses' %}"
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Review Excuses</span>
+                </a>
+              </div>
+              {% endif %}
+
+              <!-- 4. Additional Standalone Items (Admin/Organizer) -->
+              {% if user_can_create_event or user_can_manage_announcements or user_is_org_admin %}
+              <div class="px-2 py-1 space-y-1 border-t border-pulse-blue/20 mt-2 pt-2">
+                <a href="{% url 'organizer-dashboard' %}"
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Dashboard</span>
+                </a>
+                {% if user_can_manage_announcements %}
+                <a href="{% url 'announcement-list' %}"
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Manage Announcements</span>
+                </a>
+                {% endif %}
+                <a href="{% url 'qr-scanner' %}"
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">QR Scanner</span>
+                </a>
+                <a href="{% url 'review-excuses' %}"
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Review Excuses</span>
+                </a>
+              </div>
+              {% endif %}
+
+              <!-- 4. Additional Standalone Items (Organizations) -->
+              <div class="px-2 py-1 space-y-1 border-t border-pulse-blue/20 mt-2 pt-2">
+                <a href="{% url 'join-organization-code' %}"
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z">
+                    </path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Join Organization</span>
+                </a>
+                <a href="{% url 'organization-create' %}"
+                  class="flex items-center gap-3 px-4 py-2.5 rounded-pulse hover:bg-pulse-navyLighter transition-colors">
+                  <svg class="w-5 h-5 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                  <span class="text-sm font-medium text-white">Create Organization</span>
+                </a>
+              </div>
+              {% endif %}
+
+              <!-- 5. Logout Button (Bottom - Full Width) -->
+              <div class="border-t border-pulse-blue/20 mt-2 pt-2 px-2 pb-2">
+                <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+                  <button type="submit"
+                    class="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-pulse bg-pulse-red/20 hover:bg-pulse-red/30 transition-colors text-sm font-medium text-pulse-red border border-pulse-red/30">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                      </path>
+                    </svg>
+                    <span>Logout</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu"
+      class="lg:hidden hidden border-t border-pulse-blue/20 bg-pulse-navyLight overflow-y-auto max-h-[calc(100vh-3.5rem)]">
+      <div class="px-3 py-2 sm:py-3 space-y-0.5 sm:space-y-1">
+        {% if user.is_authenticated %}
+        <!-- Main Navigation Links (Hidden on mobile - available in bottom nav) -->
+        <div class="hidden lg:block">
+          <a href="{% url 'event-list' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-blue transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <span class="font-medium">Events</span>
+          </a>
+          <a href="{% url 'announcements-newsfeed' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-blue transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+              </path>
+            </svg>
+            <span class="font-medium">Announcements</span>
+          </a>
+          <a href="{% url 'leaderboard' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-blue transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z">
+              </path>
+            </svg>
+            <span class="font-medium">Leaderboard</span>
+          </a>
+        </div>
+
+        <!-- User Menu Items (matching desktop order) -->
+        <div class="border-t border-pulse-blue/20 my-2 pt-2">
+          <a href="{% url 'profile' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-blue transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+            <span class="font-medium text-white">My Profile</span>
+          </a>
+          <a href="{% url 'my-registrations' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-blue transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+              </path>
+            </svg>
+            <span class="font-medium text-white">My Registrations</span>
+          </a>
+        </div>
+
+        {% load auth_helpers %}
+        {% can_create_event as user_can_create_event %}
+        {% can_manage_announcements as user_can_manage_announcements %}
+        {% is_org_admin as user_is_org_admin %}
+
+        <!-- Super Admin Section -->
+        {% if user.is_superuser %}
+        <div class="border-t border-pulse-blue/20 my-2 pt-2">
+          <div class="px-3 sm:px-4 py-2">
+            <span class="text-xs font-semibold text-pulse-purple uppercase tracking-wider">Super Admin</span>
+          </div>
+          <a href="{% url 'user-management' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-purple transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-purple flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+              </path>
+            </svg>
+            <span class="font-medium text-white">Manage Users</span>
+          </a>
+          <a href="{% url 'organization-list' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-purple transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-purple flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+              </path>
+            </svg>
+            <span class="font-medium text-white">Manage Organizations</span>
+          </a>
+          <a href="{% url 'announcement-list' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-purple transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-purple flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+              </path>
+            </svg>
+            <span class="font-medium text-white">Manage Announcements</span>
+          </a>
+          <a href="{% url 'review-excuses' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-purple transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-purple flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="font-medium text-white">Review Excuses</span>
+          </a>
+        </div>
+        {% endif %}
+
+        <!-- Admin/Organizer Section -->
+        {% if user_can_create_event or user_can_manage_announcements or user_is_org_admin %}
+        <div class="border-t border-pulse-blue/20 my-2 pt-2">
+          <div class="px-3 sm:px-4 py-2">
+            <span class="text-xs font-semibold text-pulse-blue uppercase tracking-wider">Admin/Organizer</span>
+          </div>
+          <a href="{% url 'organizer-dashboard' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-blue transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+              </path>
+            </svg>
+            <span class="font-medium text-white">Dashboard</span>
+          </a>
+          {% if user_can_manage_announcements %}
+          <a href="{% url 'announcement-list' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-blue transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z">
+              </path>
+            </svg>
+            <span class="font-medium text-white">Manage Announcements</span>
+          </a>
+          {% endif %}
+          <a href="{% url 'qr-scanner' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-orange transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-orange flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z">
+              </path>
+            </svg>
+            <span class="font-medium text-white">QR Scanner</span>
+          </a>
+          <a href="{% url 'review-excuses' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-blue transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span class="font-medium text-white">Review Excuses</span>
+          </a>
+        </div>
+        {% endif %}
+
+        <!-- Organization Section -->
+        <div class="border-t border-pulse-blue/20 my-2 pt-2">
+          <a href="{% url 'join-organization-code' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-blue transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z">
+              </path>
+            </svg>
+            <span class="font-medium text-white">Join Organization</span>
+          </a>
+          <a href="{% url 'organization-create' %}"
+            class="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-blue transition-all text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-blue flex-shrink-0" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span class="font-medium text-white">Create Organization</span>
+          </a>
+        </div>
+
+        <!-- Logout -->
+        <div class="border-t border-pulse-blue/20 my-2 pt-2">
+          <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+            <button type="submit"
+              class="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-red/20 transition-colors text-left text-sm sm:text-base">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 text-pulse-red flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                </path>
+              </svg>
+              <span class="font-medium text-pulse-red">Logout</span>
+            </button>
+          </form>
+        </div>
+        {% else %}
+        <!-- Unauthenticated User Links -->
+        <div class="border-t border-pulse-blue/20 my-2 pt-2 space-y-2">
+          <a href="{% url 'login' %}"
+            class="flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-pulse hover:bg-pulse-navyLighter text-text-secondary hover:text-pulse-blue transition-all text-sm sm:text-base font-medium">
+            Login
+          </a>
+          <a href="{% url 'signup' %}"
+            class="flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 bg-pulse-blue text-white rounded-pulse hover:bg-pulse-blue-dark transition-all font-medium text-sm sm:text-base shadow-pulse-sm">
+            Sign Up
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- Messages -->
+  <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 mt-3 sm:mt-4 lg:mt-6">
+    {% if messages %}
+    <div class="space-y-1.5 sm:space-y-2">
+      {% for message in messages %}
+      <div
+        class="p-2.5 sm:p-3 rounded-pulse text-xs sm:text-sm {% if message.tags %} {{ message.tags }} {% endif %} bg-pulse-navyLight border border-pulse-blue/20 shadow-pulse-sm text-white">
+        {{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Organization Join Success Popup -->
+  {% if request.session.org_joined_name %}
+  <div id="org-join-popup" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+    <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse-lg border border-pulse-blue/30 p-6 sm:p-8 max-w-sm w-full mx-4 animate-slideUp">
+      <div class="text-center">
+        <!-- Success Icon -->
+        <div class="mx-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-pulse-green/20 flex items-center justify-center mb-4 sm:mb-6">
+          <svg class="w-8 h-8 sm:w-10 sm:h-10 text-pulse-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        
+        <!-- Success Message -->
+        <h3 class="text-lg sm:text-xl font-bold text-white mb-2 sm:mb-3">
+          Successfully joined {{ request.session.org_joined_name }}!
+        </h3>
+        <p class="text-sm sm:text-base text-text-muted mb-4 sm:mb-6">
+          You are now a member of this organization.
+        </p>
+        
+        <!-- Close Button -->
+        <button onclick="closeOrgJoinPopup()" 
+          class="w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-pulse-gradient text-white rounded-pulse hover:opacity-90 transition-all font-medium shadow-pulse-sm">
+          Got it
+        </button>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- HERO (only shown when explicitly defined in child templates) -->
+  {% block hero %}{% endblock hero %}
+
+  <!-- MAIN CONTENT -->
+  <main class="pb-20 sm:pb-24 lg:pb-8 overflow-x-hidden">
+    {% block content %}{% endblock content %}
+  </main>
+
+  <!-- Bottom Navigation Bar (Mobile) -->
+  {% if user.is_authenticated %}
+  <nav class="fixed bottom-0 left-0 right-0 z-50 bg-pulse-navyLight/95 backdrop-blur-lg border-t border-pulse-blue/20 shadow-lg lg:hidden">
+    <div class="flex items-center justify-around px-2 py-2">
+      <a href="{% url 'event-list' %}" 
+         class="flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all flex-shrink-0 {% if request.resolver_match.url_name == 'event-list' %}bg-pulse-blue/20 text-pulse-blue{% else %}text-text-secondary hover:text-pulse-blue{% endif %}">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+        <span class="text-xs font-medium">Events</span>
+      </a>
+      <a href="{% url 'announcements-newsfeed' %}" 
+         class="flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all flex-shrink-0 {% if request.resolver_match.url_name == 'announcements-newsfeed' %}bg-pulse-purple/20 text-pulse-purple{% else %}text-text-secondary hover:text-pulse-purple{% endif %}">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+        </svg>
+        <span class="text-xs font-medium">Announcements</span>
+      </a>
+      <a href="{% url 'leaderboard' %}" 
+         class="flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all flex-shrink-0 {% if request.resolver_match.url_name == 'leaderboard' %}bg-pulse-orange/20 text-pulse-orange{% else %}text-text-secondary hover:text-pulse-orange{% endif %}">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+        </svg>
+        <span class="text-xs font-medium">Leaderboard</span>
+      </a>
+      {% load auth_helpers %}
+      {% can_create_event as user_can_create_event %}
+      {% can_manage_announcements as user_can_manage_announcements %}
+      {% is_org_admin as user_is_org_admin %}
+      {% if user.is_superuser or user_can_create_event or user_can_manage_announcements or user_is_org_admin %}
+      <!-- Expandable QR Code Menu for Organizers/Admins/Super Admins -->
+      <div class="relative flex-shrink-0">
+        <button id="qr-code-menu-button" 
+                class="flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all {% if request.resolver_match.url_name == 'my-qr-code' or request.resolver_match.url_name == 'qr-scanner' %}bg-pulse-blue/20 text-pulse-blue{% else %}text-text-secondary hover:text-pulse-blue{% endif %}">
+          <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+          </svg>
+          <span class="text-xs font-medium">QR Code</span>
+        </button>
+      </div>
+      {% else %}
+      <!-- Direct link to My QR Code for regular users -->
+      <a href="{% url 'my-qr-code' %}" 
+         class="flex flex-col items-center justify-center px-2 py-2 rounded-xl transition-all flex-shrink-0 {% if request.resolver_match.url_name == 'my-qr-code' %}bg-pulse-blue/20 text-pulse-blue{% else %}text-text-secondary hover:text-pulse-blue{% endif %}">
+        <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+        </svg>
+        <span class="text-xs font-medium">QR Code</span>
+      </a>
+      {% endif %}
+    </div>
+  </nav>
+  {% endif %}
+
+  <!-- QR Code Expandable Menu (Mobile) -->
+  {% if user.is_authenticated %}
+  {% if user.is_superuser or user_can_create_event or user_can_manage_announcements or user_is_org_admin %}
+  <div id="qr-code-menu-overlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 lg:hidden opacity-0 transition-opacity duration-300" style="z-index: 60;">
+    <div id="qr-code-menu-panel" class="fixed bottom-0 left-0 right-0 bg-pulse-navyLight rounded-t-3xl shadow-2xl transform translate-y-full transition-transform duration-300 ease-out" style="z-index: 61;">
+      <div class="px-4 py-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-semibold text-white">QR Code Options</h3>
+          <button id="qr-code-menu-close" class="text-text-secondary hover:text-white transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="space-y-3">
+          <a href="{% url 'qr-scanner' %}" 
+             class="flex items-center gap-4 px-4 py-4 bg-pulse-navyLighter rounded-xl hover:bg-pulse-navyLighter/80 transition-all group">
+            <div class="flex-shrink-0 w-12 h-12 bg-pulse-orange/20 rounded-xl flex items-center justify-center group-hover:bg-pulse-orange/30 transition-colors">
+              <svg class="w-6 h-6 text-pulse-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h4 class="text-base font-semibold text-white">Scanner</h4>
+              <p class="text-sm text-text-secondary">Scan QR codes to check in attendees</p>
+            </div>
+            <svg class="w-5 h-5 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </a>
+          <a href="{% url 'my-qr-code' %}" 
+             class="flex items-center gap-4 px-4 py-4 bg-pulse-navyLighter rounded-xl hover:bg-pulse-navyLighter/80 transition-all group">
+            <div class="flex-shrink-0 w-12 h-12 bg-pulse-blue/20 rounded-xl flex items-center justify-center group-hover:bg-pulse-blue/30 transition-colors">
+              <svg class="w-6 h-6 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h4 class="text-base font-semibold text-white">My QR Code</h4>
+              <p class="text-sm text-text-secondary">View and share your personal QR code</p>
+            </div>
+            <svg class="w-5 h-5 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% endif %}
+
+  <!-- FOOTER (Desktop Only) -->
+  <footer class="hidden lg:block border-t border-pulse-blue/20 bg-pulse-navyLight py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-text-muted">© {% now "Y" %} Pulse. All
+      rights reserved.</div>
+  </footer>
+
+  <!-- Base scripts -->
+  <script>
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-button')?.addEventListener('click', function () {
+      const menu = document.getElementById('mobile-menu');
+      if (!menu) return;
+      menu.classList.toggle('hidden');
+    });
+
+    // User dropdown menu toggle (Desktop)
+    const userMenuButton = document.getElementById('user-menu-button');
+    const userMenuDropdown = document.getElementById('user-menu-dropdown');
+    const userMenuContainer = document.getElementById('user-menu-container');
+
+    if (userMenuButton && userMenuDropdown) {
+      userMenuButton.addEventListener('click', function (e) {
+        e.stopPropagation();
+        userMenuDropdown.classList.toggle('hidden');
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function (e) {
+        if (userMenuContainer && !userMenuContainer.contains(e.target)) {
+          userMenuDropdown.classList.add('hidden');
+        }
+      });
+    }
+
+    // User dropdown menu toggle (Mobile)
+    const userMenuButtonMobile = document.getElementById('user-menu-button-mobile');
+    const userMenuDropdownMobile = document.getElementById('user-menu-dropdown-mobile');
+    const userMenuContainerMobile = document.getElementById('user-menu-container-mobile');
+
+    if (userMenuButtonMobile && userMenuDropdownMobile) {
+      userMenuButtonMobile.addEventListener('click', function (e) {
+        e.stopPropagation();
+        userMenuDropdownMobile.classList.toggle('hidden');
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', function (e) {
+        if (userMenuContainerMobile && !userMenuContainerMobile.contains(e.target)) {
+          userMenuDropdownMobile.classList.add('hidden');
+        }
+      });
+    }
+
+    // Helper function to get CSRF token
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    // Organization Join Popup
+    function closeOrgJoinPopup() {
+      const popup = document.getElementById('org-join-popup');
+      if (popup) {
+        popup.classList.add('hidden');
+        // Clear session variable via AJAX
+        const csrftoken = getCookie('csrftoken');
+        fetch('{% url "clear-org-joined-session" %}', {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/json',
+          },
+          credentials: 'same-origin',
+        }).catch(err => console.log('Error clearing session:', err));
+      }
+    }
+
+    // Close popup when clicking outside
+    const orgJoinPopup = document.getElementById('org-join-popup');
+    if (orgJoinPopup) {
+      orgJoinPopup.addEventListener('click', function(e) {
+        if (e.target === orgJoinPopup) {
+          closeOrgJoinPopup();
+        }
+      });
+    }
+
+    // QR Code Expandable Menu
+    const qrCodeMenuButton = document.getElementById('qr-code-menu-button');
+    const qrCodeMenuOverlay = document.getElementById('qr-code-menu-overlay');
+    const qrCodeMenuPanel = document.getElementById('qr-code-menu-panel');
+    const qrCodeMenuClose = document.getElementById('qr-code-menu-close');
+
+    function openQrCodeMenu() {
+      if (qrCodeMenuOverlay && qrCodeMenuPanel) {
+        qrCodeMenuOverlay.classList.remove('hidden');
+        // Trigger reflow to ensure transition works
+        qrCodeMenuOverlay.offsetHeight;
+        qrCodeMenuOverlay.classList.remove('opacity-0');
+        qrCodeMenuOverlay.classList.add('opacity-100');
+        qrCodeMenuPanel.classList.remove('translate-y-full');
+        qrCodeMenuPanel.classList.add('translate-y-0');
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeQrCodeMenu() {
+      if (qrCodeMenuOverlay && qrCodeMenuPanel) {
+        qrCodeMenuOverlay.classList.add('opacity-0');
+        qrCodeMenuPanel.classList.remove('translate-y-0');
+        qrCodeMenuPanel.classList.add('translate-y-full');
+        // Restore body scroll
+        document.body.style.overflow = '';
+        // Hide after transition
+        setTimeout(() => {
+          if (qrCodeMenuOverlay) {
+            qrCodeMenuOverlay.classList.add('hidden');
+          }
+        }, 300);
+      }
+    }
+
+    if (qrCodeMenuButton) {
+      qrCodeMenuButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openQrCodeMenu();
+      });
+    }
+
+    if (qrCodeMenuClose) {
+      qrCodeMenuClose.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeQrCodeMenu();
+      });
+    }
+
+    if (qrCodeMenuOverlay) {
+      qrCodeMenuOverlay.addEventListener('click', function(e) {
+        if (e.target === qrCodeMenuOverlay) {
+          closeQrCodeMenu();
+        }
+      });
+    }
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Join {{ organization.name }} - Pulse{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy py-12">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 animate-fadeIn">
+    <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-8 md:p-10 border border-pulse-blue/20 animate-slideUp">
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 bg-pulse-gradient rounded-full flex items-center justify-center mx-auto mb-4 shadow-pulse-sm">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+          </svg>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-display font-extrabold pulse-gradient-text mb-2">
+          Join Organization
+        </h1>
+        <p class="text-text-secondary">You've been invited to join</p>
+      </div>
+
+      <!-- Organization Info -->
+      <div class="bg-pulse-purple/20 rounded-pulse-lg p-6 mb-8 border border-pulse-purple/30">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-16 h-16 bg-pulse-gradient rounded-pulse-lg flex items-center justify-center shadow-pulse-sm">
+            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h2 class="text-2xl font-bold text-white mb-1">{{ organization.name }}</h2>
+            {% if organization.description %}
+            <p class="text-text-secondary">{{ organization.description }}</p>
+            {% endif %}
+          </div>
+          {% if organization.is_active %}
+          <span class="px-3 py-1 bg-pulse-green/20 text-pulse-green text-xs font-semibold rounded-pulse-full border border-pulse-green/30">
+            Active
+          </span>
+          {% endif %}
+        </div>
+        
+        {% if invite.expires_at %}
+        <div class="flex items-center gap-2 text-sm text-text-muted mt-4 pt-4 border-t border-pulse-purple/30">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>Invite expires: {{ invite.expires_at|date:"M d, Y" }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Join Form -->
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        <div class="bg-pulse-blue/20 border border-pulse-blue/30 rounded-pulse-lg p-4">
+          <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-pulse-blue mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="text-sm text-pulse-blue">
+              <p class="font-semibold mb-1">By joining this organization:</p>
+              <ul class="list-disc list-inside space-y-1">
+                <li>You'll be able to view organization events and announcements</li>
+                <li>You'll be automatically registered for mandatory events</li>
+                <li>You can leave the organization at any time from your profile</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 pt-4">
+          <a href="{% url 'landing' %}" 
+             class="flex-1 px-6 py-3 bg-pulse-navyLighter text-text-secondary rounded-pulse font-semibold hover:bg-pulse-navyLighter/80 transition-colors text-center border border-pulse-blue/20">
+            Cancel
+          </a>
+          <button type="submit" 
+                  class="flex-1 px-8 py-3 bg-pulse-gradient text-white rounded-pulse font-semibold shadow-pulse-sm hover:opacity-90 transition-all transform hover:scale-105">
+            Join Organization
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

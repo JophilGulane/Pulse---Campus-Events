@@ -1,0 +1,650 @@
+{% extends 'base.html' %}
+{% block title %}Pulse — Landing{% endblock %}
+
+{% block head_extra %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/pulse-theme.css' %}">
+<style>
+  /* Modern Hero Section Animations */
+  @keyframes gradientShift {
+
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px) translateX(0px) rotate(0deg);
+    }
+
+    33% {
+      transform: translateY(-20px) translateX(10px) rotate(2deg);
+    }
+
+    66% {
+      transform: translateY(10px) translateX(-10px) rotate(-2deg);
+    }
+  }
+
+  @keyframes breathe {
+
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+
+    50% {
+      transform: scale(1.1);
+      opacity: 0.8;
+    }
+  }
+
+  @keyframes glowPulse {
+
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(0, 115, 230, 0.4), 0 0 40px rgba(124, 0, 230, 0.2), 0 0 60px rgba(255, 114, 0, 0.1);
+    }
+
+    50% {
+      box-shadow: 0 0 30px rgba(0, 115, 230, 0.6), 0 0 60px rgba(124, 0, 230, 0.4), 0 0 90px rgba(255, 114, 0, 0.2);
+    }
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes rotateSlow {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes wave {
+
+    0%,
+    100% {
+      transform: translateX(0) translateY(0);
+    }
+
+    25% {
+      transform: translateX(10px) translateY(-10px);
+    }
+
+    50% {
+      transform: translateX(-5px) translateY(5px);
+    }
+
+    75% {
+      transform: translateX(-10px) translateY(-5px);
+    }
+  }
+
+  /* Hero Background with Animated Gradient */
+  .pulse-hero-bg {
+    background: linear-gradient(135deg, #0A0F3A 0%, #141B4D 25%, #1E2560 50%, #0A0F3A 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pulse-hero-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(0, 115, 230, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(124, 0, 230, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(255, 114, 0, 0.1) 0%, transparent 60%);
+    animation: breathe 8s ease-in-out infinite;
+  }
+
+  /* Animated Decorative Shapes */
+  .hero-shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    animation: float 20s ease-in-out infinite;
+  }
+
+  .hero-shape-1 {
+    width: 300px;
+    height: 300px;
+    background: rgba(0, 115, 230, 0.2);
+    top: 10%;
+    left: 5%;
+    animation-delay: 0s;
+  }
+
+  .hero-shape-2 {
+    width: 250px;
+    height: 250px;
+    background: rgba(124, 0, 230, 0.2);
+    bottom: 15%;
+    right: 10%;
+    animation-delay: 2s;
+  }
+
+  .hero-shape-3 {
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 114, 0, 0.15);
+    top: 50%;
+    right: 20%;
+    animation-delay: 4s;
+  }
+
+  /* Glowing Ring Animation */
+  .glow-ring {
+    position: absolute;
+    border: 2px solid;
+    border-radius: 50%;
+    animation: glowPulse 3s ease-in-out infinite;
+  }
+
+  .glow-ring-1 {
+    width: 400px;
+    height: 400px;
+    border-color: rgba(0, 115, 230, 0.3);
+    top: -100px;
+    right: -100px;
+    animation-delay: 0s;
+  }
+
+  .glow-ring-2 {
+    width: 300px;
+    height: 300px;
+    border-color: rgba(124, 0, 230, 0.3);
+    bottom: -50px;
+    left: -50px;
+    animation-delay: 1.5s;
+  }
+
+  /* Text Animations */
+  .animate-slide-up {
+    animation: slideInUp 0.8s ease-out forwards;
+    opacity: 0;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.6s ease-out forwards;
+    opacity: 0;
+  }
+
+  .delay-100 {
+    animation-delay: 0.1s;
+  }
+
+  .delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .delay-300 {
+    animation-delay: 0.3s;
+  }
+
+  .delay-400 {
+    animation-delay: 0.4s;
+  }
+
+  .delay-500 {
+    animation-delay: 0.5s;
+  }
+
+  .delay-600 {
+    animation-delay: 0.6s;
+  }
+
+  .delay-700 {
+    animation-delay: 0.7s;
+  }
+
+  .delay-800 {
+    animation-delay: 0.8s;
+  }
+
+  /* CTA Button Hover Effects */
+  .cta-primary {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .cta-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+  }
+
+  .cta-primary:hover::before {
+    left: 100%;
+  }
+
+  .cta-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(0, 115, 230, 0.5), 0 0 60px rgba(124, 0, 230, 0.3);
+  }
+
+  .cta-secondary {
+    transition: all 0.3s ease;
+  }
+
+  .cta-secondary:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  /* Abstract Campus Illustration */
+  .campus-illustration {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0.1;
+    pointer-events: none;
+  }
+
+  .campus-illustration svg {
+    width: 100%;
+    height: 100%;
+    animation: wave 25s ease-in-out infinite;
+  }
+
+  /* Mobile Optimizations */
+  @media (max-width: 640px) {
+    .hero-shape {
+      filter: blur(40px);
+    }
+
+    .hero-shape-1,
+    .hero-shape-2,
+    .hero-shape-3 {
+      width: 150px;
+      height: 150px;
+    }
+
+    .glow-ring {
+      display: none;
+    }
+
+    .campus-illustration {
+      opacity: 0.05;
+    }
+  }
+
+  @media (max-width: 768px) {
+
+    .glow-ring-1,
+    .glow-ring-2 {
+      width: 200px;
+      height: 200px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block hero %}
+<!-- Modern Animated Hero Section -->
+<section
+  class="pulse-hero-bg text-white relative min-h-[85vh] sm:min-h-[90vh] lg:min-h-[90vh] xl:min-h-[85vh] overflow-hidden">
+  <!-- Animated Background Shapes -->
+  <div class="hero-shape hero-shape-1"></div>
+  <div class="hero-shape hero-shape-2"></div>
+  <div class="hero-shape hero-shape-3"></div>
+
+  <!-- Glowing Rings -->
+  <div class="glow-ring glow-ring-1 hidden lg:block"></div>
+  <div class="glow-ring glow-ring-2 hidden lg:block"></div>
+
+  <!-- Abstract Campus Illustration -->
+  <div class="campus-illustration hidden lg:block">
+    <svg viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Abstract building shapes -->
+      <rect x="100" y="300" width="120" height="400" rx="8" fill="url(#grad1)" opacity="0.3" />
+      <rect x="250" y="200" width="120" height="500" rx="8" fill="url(#grad2)" opacity="0.3" />
+      <rect x="400" y="350" width="120" height="350" rx="8" fill="url(#grad3)" opacity="0.3" />
+      <rect x="550" y="250" width="120" height="450" rx="8" fill="url(#grad1)" opacity="0.3" />
+      <rect x="700" y="400" width="120" height="300" rx="8" fill="url(#grad2)" opacity="0.3" />
+      <rect x="850" y="300" width="120" height="400" rx="8" fill="url(#grad3)" opacity="0.3" />
+      <rect x="1000" y="450" width="120" height="250" rx="8" fill="url(#grad1)" opacity="0.3" />
+      <!-- Gradient definitions -->
+      <defs>
+        <linearGradient id="grad1" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#0073E6;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#7C00E6;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="grad2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#7C00E6;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#FF7200;stop-opacity:1" />
+        </linearGradient>
+        <linearGradient id="grad3" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#FF7200;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#0073E6;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+    </svg>
+  </div>
+
+  <!-- Main Content -->
+  <div
+    class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 md:pt-8 lg:pt-4 xl:pt-6 pb-8 sm:pb-10 md:pb-12 lg:pb-8 xl:pb-10 relative z-10">
+    <div
+      class="flex flex-col items-center justify-center min-h-[75vh] sm:min-h-[80vh] lg:min-h-[85vh] xl:min-h-[80vh] text-center">
+
+      <!-- Pulse Logo Badge -->
+      <div class="mb-3 sm:mb-4 lg:mb-4 animate-scale-in delay-100">
+        <div
+          class="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 rounded-2xl bg-pulse-gradient shadow-pulse-lg p-2 sm:p-3"
+          style="animation: glowPulse 3s ease-in-out infinite;">
+          <img src="{% static 'image/pulse-logo.png' %}" alt="Pulse Logo" class="w-full h-full object-contain">
+        </div>
+      </div>
+
+      <!-- Main Headline -->
+      <h1
+        class="text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-6xl font-display font-extrabold leading-tight mb-2 sm:mb-3 lg:mb-3 animate-slide-up delay-200">
+        <span
+          class="bg-gradient-to-r from-blue-400 via-purple-400 to-orange-400 bg-clip-text text-transparent drop-shadow-2xl">
+          Pulse
+        </span>
+        <span class="text-white block sm:inline sm:ml-3">
+          Campus Events
+        </span>
+      </h1>
+
+      <!-- Sub-headline -->
+      <p
+        class="text-base sm:text-lg md:text-xl lg:text-lg xl:text-xl text-white/90 max-w-3xl mx-auto mb-4 sm:mb-5 lg:mb-6 px-4 sm:px-0 leading-relaxed animate-slide-up delay-300">
+        The modern platform for discovering, managing, and experiencing campus events.
+        <span class="text-pulse-blue font-semibold">Connect.</span>
+        <span class="text-pulse-purple font-semibold">Engage.</span>
+        <span class="text-pulse-orange font-semibold">Thrive.</span>
+      </p>
+
+      <!-- CTA Buttons -->
+      <div
+        class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 animate-slide-up delay-500 w-full sm:w-auto px-4 sm:px-0">
+        {% if user.is_authenticated %}
+        <a href="{% url 'event-list' %}"
+          class="cta-primary w-full sm:w-auto group px-6 sm:px-8 lg:px-8 xl:px-10 py-3 sm:py-4 lg:py-3 xl:py-4 rounded-xl bg-pulse-gradient text-white font-bold text-sm sm:text-base lg:text-base xl:text-lg shadow-pulse-lg flex items-center justify-center gap-2 sm:gap-3">
+          <span>Explore Events</span>
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+          </svg>
+        </a>
+        {% else %}
+        <a href="{% url 'signup' %}"
+          class="cta-primary w-full sm:w-auto group px-6 sm:px-8 lg:px-8 xl:px-10 py-3 sm:py-4 lg:py-3 xl:py-4 rounded-xl bg-pulse-gradient text-white font-bold text-sm sm:text-base lg:text-base xl:text-lg shadow-pulse-lg flex items-center justify-center gap-2 sm:gap-3">
+          <span>Get Started Free</span>
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" fill="none"
+            stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+          </svg>
+        </a>
+        {% endif %}
+        <a href="#about"
+          class="cta-secondary w-full sm:w-auto px-6 sm:px-8 lg:px-8 xl:px-10 py-3 sm:py-4 lg:py-3 xl:py-4 rounded-xl bg-white/10 backdrop-blur-sm text-white font-semibold text-sm sm:text-base lg:text-base xl:text-lg border-2 border-white/20 hover:border-white/40 flex items-center justify-center gap-2 sm:gap-3">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>Learn More</span>
+        </a>
+      </div>
+
+      <!-- Feature Pills -->
+      <div
+        class="mt-4 sm:mt-5 lg:mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 animate-slide-up delay-700 px-4 sm:px-0">
+        <div
+          class="flex items-center gap-2 px-4 py-2 rounded-full bg-pulse-navyLight/50 backdrop-blur-sm border border-pulse-blue/30">
+          <svg class="w-4 h-4 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="text-sm sm:text-base text-white/90 font-medium">QR Check-In</span>
+        </div>
+        <div
+          class="flex items-center gap-2 px-4 py-2 rounded-full bg-pulse-navyLight/50 backdrop-blur-sm border border-pulse-purple/30">
+          <svg class="w-4 h-4 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6">
+            </path>
+          </svg>
+          <span class="text-sm sm:text-base text-white/90 font-medium">Earn Points</span>
+        </div>
+        <div
+          class="flex items-center gap-2 px-4 py-2 rounded-full bg-pulse-navyLight/50 backdrop-blur-sm border border-pulse-orange/30">
+          <svg class="w-4 h-4 text-pulse-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+            </path>
+          </svg>
+          <span class="text-sm sm:text-base text-white/90 font-medium">Build Community</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<!-- About Pulse Section -->
+<section id="about" class="relative py-12 sm:py-16 lg:py-20 xl:py-24 bg-pulse-navy overflow-hidden">
+  <!-- Background decorative elements -->
+  <div class="absolute top-0 left-0 w-96 h-96 bg-pulse-blue/10 rounded-full filter blur-3xl opacity-50"></div>
+  <div class="absolute bottom-0 right-0 w-96 h-96 bg-pulse-purple/10 rounded-full filter blur-3xl opacity-50"></div>
+  <div
+    class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-pulse-orange/5 rounded-full filter blur-3xl">
+  </div>
+
+  <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 relative z-10">
+    <!-- Section Header -->
+    <div class="text-center mb-10 sm:mb-12 lg:mb-16 animate-fade-in-up">
+      <div
+        class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-pulse-lg bg-pulse-gradient shadow-pulse mb-4 sm:mb-6">
+        <svg class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-white" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+      </div>
+      <h2
+        class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-extrabold pulse-gradient-text mb-3 sm:mb-4">
+        About Pulse
+      </h2>
+      <p class="text-sm sm:text-base lg:text-lg text-text-secondary max-w-3xl mx-auto">
+        A premium campus experiences platform designed to connect, engage, and inspire
+      </p>
+    </div>
+
+    <!-- Premium Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
+      <!-- Card 1: Discover Events -->
+      <div
+        class="group bg-pulse-navyLight rounded-pulse-lg p-6 sm:p-8 border border-pulse-blue/20 shadow-pulse-sm hover:shadow-pulse hover:border-pulse-blue/40 transition-all duration-300 transform hover:-translate-y-2 animate-fade-in-up flex flex-col items-center text-center">
+        <div
+          class="w-14 h-14 sm:w-16 sm:h-16 rounded-pulse bg-pulse-gradient flex items-center justify-center mb-4 sm:mb-6 shadow-pulse-sm group-hover:scale-110 transition-transform duration-300">
+          <svg class="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">Discover Events</h3>
+        <p class="text-sm sm:text-base text-text-secondary leading-relaxed">
+          Explore a curated selection of campus events tailored to your interests. From workshops to social gatherings,
+          find what matters to you.
+        </p>
+      </div>
+
+      <!-- Card 2: Earn Points -->
+      <div
+        class="group bg-pulse-navyLight rounded-pulse-lg p-6 sm:p-8 border border-pulse-purple/20 shadow-pulse-sm hover:shadow-pulse hover:border-pulse-purple/40 transition-all duration-300 transform hover:-translate-y-2 animate-fade-in-up delay-200 flex flex-col items-center text-center">
+        <div
+          class="w-14 h-14 sm:w-16 sm:h-16 rounded-pulse bg-pulse-gradient-horizontal flex items-center justify-center mb-4 sm:mb-6 shadow-pulse-sm group-hover:scale-110 transition-transform duration-300">
+          <svg class="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6">
+            </path>
+          </svg>
+        </div>
+        <h3 class="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">Earn Points</h3>
+        <p class="text-sm sm:text-base text-text-secondary leading-relaxed">
+          Participate in events and earn points through our gamified system. Track your progress and climb the
+          leaderboard.
+        </p>
+      </div>
+
+      <!-- Card 3: QR Code Scanning -->
+      <div
+        class="group bg-pulse-navyLight rounded-pulse-lg p-6 sm:p-8 border border-pulse-orange/20 shadow-pulse-sm hover:shadow-pulse hover:border-pulse-orange/40 transition-all duration-300 transform hover:-translate-y-2 animate-fade-in-up delay-300 flex flex-col items-center text-center">
+        <div
+          class="w-14 h-14 sm:w-16 sm:h-16 rounded-pulse bg-pulse-gradient flex items-center justify-center mb-4 sm:mb-6 shadow-pulse-sm group-hover:scale-110 transition-transform duration-300">
+          <svg class="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z">
+            </path>
+          </svg>
+        </div>
+        <h3 class="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">Quick Check-In</h3>
+        <p class="text-sm sm:text-base text-text-secondary leading-relaxed">
+          Seamless QR code scanning for instant event attendance. Fast, secure, and hassle-free check-ins.
+        </p>
+      </div>
+
+      <!-- Card 4: Real-Time Updates -->
+      <div
+        class="group bg-pulse-navyLight rounded-pulse-lg p-6 sm:p-8 border border-pulse-blue/20 shadow-pulse-sm hover:shadow-pulse hover:border-pulse-blue/40 transition-all duration-300 transform hover:-translate-y-2 animate-fade-in-up delay-400 flex flex-col items-center text-center">
+        <div
+          class="w-14 h-14 sm:w-16 sm:h-16 rounded-pulse bg-pulse-gradient flex items-center justify-center mb-4 sm:mb-6 shadow-pulse-sm group-hover:scale-110 transition-transform duration-300">
+          <svg class="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+            </path>
+          </svg>
+        </div>
+        <h3 class="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">Stay Informed</h3>
+        <p class="text-sm sm:text-base text-text-secondary leading-relaxed">
+          Receive real-time announcements and updates. Never miss important campus news or event changes.
+        </p>
+      </div>
+
+      <!-- Card 5: Community Connection -->
+      <div
+        class="group bg-pulse-navyLight rounded-pulse-lg p-6 sm:p-8 border border-pulse-purple/20 shadow-pulse-sm hover:shadow-pulse hover:border-pulse-purple/40 transition-all duration-300 transform hover:-translate-y-2 animate-fade-in-up delay-500 flex flex-col items-center text-center">
+        <div
+          class="w-14 h-14 sm:w-16 sm:h-16 rounded-pulse bg-pulse-gradient-horizontal flex items-center justify-center mb-4 sm:mb-6 shadow-pulse-sm group-hover:scale-110 transition-transform duration-300">
+          <svg class="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
+            </path>
+          </svg>
+        </div>
+        <h3 class="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">Build Community</h3>
+        <p class="text-sm sm:text-base text-text-secondary leading-relaxed">
+          Connect with like-minded students, join organizations, and be part of a vibrant campus community.
+        </p>
+      </div>
+
+      <!-- Card 6: Leaderboard -->
+      <div
+        class="group bg-pulse-navyLight rounded-pulse-lg p-6 sm:p-8 border border-pulse-orange/20 shadow-pulse-sm hover:shadow-pulse hover:border-pulse-orange/40 transition-all duration-300 transform hover:-translate-y-2 animate-fade-in-up delay-600 flex flex-col items-center text-center">
+        <div
+          class="w-14 h-14 sm:w-16 sm:h-16 rounded-pulse bg-pulse-gradient flex items-center justify-center mb-4 sm:mb-6 shadow-pulse-sm group-hover:scale-110 transition-transform duration-300">
+          <svg class="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 0 .806.835 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-.835 3.42 3.42 0 013.138-3.138z">
+            </path>
+          </svg>
+        </div>
+        <h3 class="text-xl sm:text-2xl font-bold text-white mb-2 sm:mb-3">Compete & Win</h3>
+        <p class="text-sm sm:text-base text-text-secondary leading-relaxed">
+          Climb the leaderboard, earn recognition, and compete with peers. Your participation matters.
+        </p>
+      </div>
+    </div>
+
+    <!-- Premium CTA Card -->
+    <div
+      class="relative bg-pulse-gradient rounded-pulse-lg p-8 sm:p-10 lg:p-12 shadow-pulse-lg border border-pulse-blue/30 overflow-hidden animate-fade-in-up delay-700">
+      <!-- Background pattern -->
+      <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-0 left-0 w-64 h-64 bg-white rounded-full filter blur-3xl"></div>
+        <div class="absolute bottom-0 right-0 w-64 h-64 bg-white rounded-full filter blur-3xl"></div>
+      </div>
+
+      <div class="relative z-10 text-center">
+        <h3 class="text-2xl sm:text-3xl lg:text-4xl font-display font-extrabold text-white mb-4 sm:mb-6">
+          Feel the Pulse. Never Miss a Beat.
+        </h3>
+        <p class="text-base sm:text-lg lg:text-xl text-white/90 max-w-3xl mx-auto mb-6 sm:mb-8 leading-relaxed">
+          Join thousands of students who are already part of the Pulse community. Start your journey today and
+          experience campus life like never before.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+          {% if not user.is_authenticated %}
+          <a href="{% url 'signup' %}"
+            class="group px-6 sm:px-8 py-3 sm:py-4 bg-white text-pulse-blue rounded-pulse font-semibold text-sm sm:text-base shadow-pulse-lg hover:shadow-pulse-xl transition-all transform hover:scale-105 flex items-center gap-2">
+            <span>Get Started</span>
+            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+          </a>
+          {% else %}
+          <a href="{% url 'event-list' %}"
+            class="group px-6 sm:px-8 py-3 sm:py-4 bg-white text-pulse-blue rounded-pulse font-semibold text-sm sm:text-base shadow-pulse-lg hover:shadow-pulse-xl transition-all transform hover:scale-105 flex items-center gap-2">
+            <span>Explore Events</span>
+            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+          </a>
+          {% endif %}
+          <a href="{% url 'landing' %}#features"
+            class="px-6 sm:px-8 py-3 sm:py-4 bg-white/10 backdrop-blur-sm text-white rounded-pulse font-semibold text-sm sm:text-base border border-white/20 hover:bg-white/20 transition-all">
+            Learn More
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

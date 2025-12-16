@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Join Organization - Pulse{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy py-12">
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 animate-fadeIn">
+    <a href="{% url 'profile' %}" 
+       class="inline-flex items-center text-pulse-blue hover:text-pulse-blue/80 transition-colors mb-6 group">
+      <svg class="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      Back to Profile
+    </a>
+
+    <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-8 md:p-10 border border-pulse-blue/20 animate-slideUp">
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 bg-pulse-gradient rounded-full flex items-center justify-center mx-auto mb-4 shadow-pulse-sm">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+          </svg>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-display font-extrabold pulse-gradient-text mb-2">
+          Join Organization
+        </h1>
+        <p class="text-text-secondary">Enter the join code provided by your organization</p>
+      </div>
+
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+          <div class="bg-pulse-red/20 border border-pulse-red/30 text-pulse-red px-4 py-3 rounded-pulse" role="alert">
+            {% for error in form.non_field_errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <div>
+          <label for="{{ form.join_code.id_for_label }}" class="block text-sm font-medium text-text-secondary mb-2">
+            {{ form.join_code.label }}
+          </label>
+          <div class="relative">
+            <input type="text" 
+                   name="{{ form.join_code.name }}" 
+                   id="{{ form.join_code.id_for_label }}"
+                   value="{{ form.join_code.value|default:'' }}"
+                   class="w-full px-4 py-3 pr-12 border border-pulse-blue/30 rounded-pulse focus:ring-2 focus:ring-pulse-blue focus:border-pulse-blue bg-pulse-navyLighter text-white text-center text-xl font-mono font-bold uppercase tracking-wider placeholder:text-text-muted"
+                   placeholder="XXXX-XXXX-XXXX"
+                   autofocus>
+            <div class="absolute right-3 top-3">
+              <svg class="w-5 h-5 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+            </div>
+          </div>
+          {% if form.join_code.errors %}
+            <p class="mt-2 text-sm text-pulse-red">{{ form.join_code.errors.0 }}</p>
+          {% endif %}
+          {% if form.join_code.help_text %}
+            <p class="mt-2 text-sm text-text-muted">{{ form.join_code.help_text }}</p>
+          {% endif %}
+        </div>
+
+        <div class="flex items-center gap-4 pt-4">
+          <a href="{% url 'profile' %}" 
+             class="flex-1 px-6 py-3 bg-pulse-navyLighter text-text-secondary rounded-pulse font-semibold hover:bg-pulse-navyLighter/80 transition-colors text-center border border-pulse-blue/20">
+            Cancel
+          </a>
+          <button type="submit" 
+                  class="flex-1 px-8 py-3 bg-pulse-gradient text-white rounded-pulse font-semibold shadow-pulse-sm hover:opacity-90 transition-all transform hover:scale-105">
+            Join Organization
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

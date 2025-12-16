@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Manage Participants - Pulse{% endblock %}
+
+{% block head_extra %}
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 py-6 sm:py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <!-- Header -->
+    <div class="animate-fadeIn">
+      <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            Manage Participants
+          </h1>
+          <p class="text-sm text-gray-600 mt-1">View registrations, attendance status, and scores.</p>
+        </div>
+        <div class="text-xs text-gray-500">
+          Organizers can only see registrations for their organizations.
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-2xl shadow-xl p-6 animate-fadeIn delay-100">
+      <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-2">Event</label>
+          <select name="event" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            <option value="">All events</option>
+            {% for event in events %}
+            <option value="{{ event.id }}" {% if selected_event == event.id|stringformat:"s" %}selected{% endif %}>
+              {{ event.title }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 mb-2">Status</label>
+          <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>
+              {{ label }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button type="submit" class="w-full px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-semibold shadow hover:from-indigo-700 hover:to-purple-700">
+            Apply Filters
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden animate-fadeIn delay-200">
+      {% if registrations %}
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-50 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+            <tr>
+              <th class="px-4 sm:px-6 py-3 text-left">Participant</th>
+              <th class="px-4 sm:px-6 py-3 text-left">Event</th>
+              <th class="px-4 sm:px-6 py-3 text-left">Organization</th>
+              <th class="px-4 sm:px-6 py-3 text-left">Status</th>
+              <th class="px-4 sm:px-6 py-3 text-right">Registered</th>
+              <th class="px-4 sm:px-6 py-3 text-center">Attendance Score</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            {% for registration in registrations %}
+            <tr class="hover:bg-slate-50 transition">
+              <td class="px-4 sm:px-6 py-4">
+                <div class="flex flex-col">
+                  <span class="font-semibold text-gray-900">{{ registration.user.get_full_name|default:registration.user.username }}</span>
+                  <span class="text-xs text-gray-500">@{{ registration.user.username }}</span>
+                </div>
+              </td>
+              <td class="px-4 sm:px-6 py-4">
+                <div class="text-gray-900 font-medium">{{ registration.event.title }}</div>
+                <div class="text-xs text-gray-500">{{ registration.event.start_datetime|date:"M d, Y" }}</div>
+              </td>
+              <td class="px-4 sm:px-6 py-4">
+                {% if registration.event.organization %}
+                <span class="text-sm text-gray-700">{{ registration.event.organization.name }}</span>
+                {% else %}
+                <span class="text-xs text-gray-400">Global</span>
+                {% endif %}
+              </td>
+              <td class="px-4 sm:px-6 py-4">
+                <span class="inline-flex px-2.5 py-1 text-xs font-semibold rounded-full
+                  {% if registration.status == 'ATTENDED' %}bg-green-100 text-green-700
+                  {% elif registration.status == 'CONFIRMED' %}bg-blue-100 text-blue-700
+                  {% elif registration.status == 'PRE' %}bg-indigo-100 text-indigo-700
+                  {% elif registration.status == 'CANCELLED' %}bg-rose-100 text-rose-700
+                  {% else %}bg-gray-100 text-gray-700{% endif %}">
+                  {{ registration.get_status_display }}
+                </span>
+              </td>
+              <td class="px-4 sm:px-6 py-4 text-right text-xs text-gray-500">
+                {{ registration.registered_at|date:"M d, Y g:i A" }}
+              </td>
+              <td class="px-4 sm:px-6 py-4 text-center">
+                {% if registration.event.organization %}
+                <a href="{% url 'organization-mandatory-summary' registration.event.organization.pk %}?user={{ registration.user.pk }}"
+                   class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold hover:bg-blue-100 transition">
+                  View score
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                  </svg>
+                </a>
+                {% else %}
+                <span class="text-xs text-gray-400">—</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      {% if is_paginated %}
+      <div class="bg-slate-50 px-4 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-gray-100 text-xs text-gray-500">
+        <span>Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ paginator.count }} registrations</span>
+        <div class="flex gap-2">
+          {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% if selected_event %}&event={{ selected_event }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}"
+             class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-white">Previous</a>
+          {% endif %}
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if selected_event %}&event={{ selected_event }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}"
+             class="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-white">Next</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+      {% else %}
+      <div class="p-12 text-center text-gray-500 text-sm">
+        No registrations match your filters.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+

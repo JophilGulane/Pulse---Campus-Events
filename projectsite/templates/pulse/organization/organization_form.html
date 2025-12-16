@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{% if object %}Edit Organization{% else %}Create Organization{% endif %} - Pulse{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy py-12">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 animate-fadeIn">
+    <a href="{% if request.META.HTTP_REFERER and 'organization-create' not in request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{% url 'profile' %}{% endif %}" 
+       class="inline-flex items-center text-pulse-blue hover:text-pulse-blue/80 transition-colors mb-6 group">
+      <svg class="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+      </svg>
+      <span class="hidden sm:inline">Back</span>
+      <span class="sm:hidden">Back</span>
+    </a>
+
+    <h1 class="text-4xl md:text-5xl font-display font-extrabold pulse-gradient-text mb-8">
+      {% if object %}Edit Organization{% else %}Create New Organization{% endif %}
+    </h1>
+
+    <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-8 md:p-10 border border-pulse-blue/20 animate-slideUp">
+      <form method="post" class="space-y-8">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+          <div class="bg-pulse-red/20 border border-pulse-red/30 text-pulse-red px-4 py-3 rounded-pulse relative" role="alert">
+            <strong class="font-bold">Oops!</strong>
+            <span class="block sm:inline">Please correct the following errors:</span>
+            <ul class="mt-2 list-disc list-inside">
+              {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <!-- Basic Information Section -->
+        <div class="space-y-6">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+            <svg class="w-7 h-7 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+            Organization Details
+          </h2>
+          
+          {% include 'includes/form_field.html' with field=form.name icon_path="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" %}
+          {% include 'includes/form_field.html' with field=form.description icon_path="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" %}
+        </div>
+
+        <!-- Settings Section -->
+        <div class="space-y-6 pt-8 border-t border-pulse-blue/20">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+            <svg class="w-7 h-7 text-pulse-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            Settings
+          </h2>
+          <div class="flex items-center justify-between bg-pulse-navyLighter/50 p-4 rounded-pulse border border-pulse-blue/20 hover:border-pulse-blue/40 transition-colors">
+            <label for="{{ form.is_active.id_for_label }}" class="flex items-center cursor-pointer flex-1">
+              <span class="text-lg font-medium text-white mr-3">Active</span>
+              <span class="text-sm text-text-muted">{{ form.is_active.help_text }}</span>
+            </label>
+            {% render_field form.is_active %}
+          </div>
+        </div>
+
+        <!-- Join Code Info -->
+        {% if object %}
+        <div class="bg-pulse-blue/20 border border-pulse-blue/30 rounded-pulse-lg p-6">
+          <h3 class="text-lg font-semibold text-pulse-blue mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Join Code
+          </h3>
+          <p class="text-text-secondary mb-3">Users can join this organization using the following code:</p>
+          <div class="bg-pulse-navyLighter rounded-pulse p-4 border border-pulse-blue/30">
+            <code class="text-2xl font-mono font-bold text-pulse-blue">{{ object.join_code }}</code>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Submit Buttons -->
+        <div class="flex items-center justify-end gap-4 pt-8 border-t border-pulse-blue/20">
+          <a href="{% if request.META.HTTP_REFERER and 'organization-create' not in request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{% url 'profile' %}{% endif %}" 
+             class="px-6 py-3 bg-pulse-navyLighter text-text-secondary rounded-pulse font-semibold hover:bg-pulse-navyLighter/80 transition-colors border border-pulse-blue/20">
+            Cancel
+          </a>
+          <button type="submit" 
+                  class="px-8 py-3 bg-pulse-gradient text-white rounded-pulse font-semibold shadow-pulse-sm hover:opacity-90 transition-all transform hover:scale-105">
+            {% if object %}Update Organization{% else %}Create Organization{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

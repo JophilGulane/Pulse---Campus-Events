@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load auth_helpers %}
+
+{% block title %}{{ organization.name }} - Pulse{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-pulse-navy py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8 animate-fadeIn">
+      <div class="flex items-center justify-between mb-6">
+        <a href="{% if request.META.HTTP_REFERER and 'organization-detail' not in request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% elif user.is_superuser %}{% url 'organization-list' %}{% else %}{% url 'profile' %}{% endif %}" 
+           class="inline-flex items-center text-pulse-blue hover:text-pulse-blue/80 transition-colors">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          <span class="hidden sm:inline">Back</span>
+          <span class="sm:hidden">Back</span>
+        </a>
+        {% if user.is_superuser %}
+        <a href="{% url 'organization-update' organization.pk %}"
+           class="inline-flex items-center px-4 py-2 bg-pulse-gradient text-white rounded-pulse hover:opacity-90 transition-colors shadow-pulse-sm">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+          </svg>
+          Edit Organization
+        </a>
+        {% endif %}
+      </div>
+      
+      <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-8 border border-pulse-blue/20">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-4 flex-wrap">
+              <h1 class="text-4xl md:text-5xl font-display font-extrabold pulse-gradient-text">
+                {{ organization.name }}
+              </h1>
+              {% if organization.status == 'PENDING' %}
+              <span class="px-4 py-1 bg-pulse-orange/20 text-pulse-orange text-sm font-semibold rounded-pulse-full border border-pulse-orange/30">
+                Pending Approval
+              </span>
+              {% elif organization.status == 'APPROVED' %}
+              <span class="px-4 py-1 bg-pulse-green/20 text-pulse-green text-sm font-semibold rounded-pulse-full border border-pulse-green/30">
+                Approved
+              </span>
+              {% elif organization.status == 'REJECTED' %}
+              <span class="px-4 py-1 bg-pulse-red/20 text-pulse-red text-sm font-semibold rounded-pulse-full border border-pulse-red/30">
+                Rejected
+              </span>
+              {% endif %}
+              {% if organization.is_active %}
+              <span class="px-4 py-1 bg-pulse-blue/20 text-pulse-blue text-sm font-semibold rounded-pulse-full border border-pulse-blue/30">
+                Active
+              </span>
+              {% else %}
+              <span class="px-4 py-1 bg-pulse-navyLighter text-text-muted text-sm font-semibold rounded-pulse-full border border-pulse-blue/20">
+                Inactive
+              </span>
+              {% endif %}
+            </div>
+            {% if organization.description %}
+            <p class="text-text-secondary text-lg mb-4">{{ organization.description }}</p>
+            {% endif %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+              <div class="bg-pulse-blue/20 rounded-pulse p-4 border border-pulse-blue/30">
+                <div class="text-sm text-pulse-blue font-medium mb-1">Join Code</div>
+                <div class="text-2xl font-mono font-bold text-white">{{ organization.join_code }}</div>
+              </div>
+              <div class="bg-pulse-purple/20 rounded-pulse p-4 border border-pulse-purple/30">
+                <div class="text-sm text-pulse-purple font-medium mb-1">Total Members</div>
+                <div class="text-2xl font-bold text-white">{{ organization.get_member_count }}</div>
+              </div>
+              <div class="bg-pulse-orange/20 rounded-pulse p-4 border border-pulse-orange/30">
+                <div class="text-sm text-pulse-orange font-medium mb-1">Events</div>
+                <div class="text-2xl font-bold text-white">{{ organization.events.count }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Section for Super Admins -->
+    {% if user.is_superuser and organization.status == 'PENDING' %}
+    <div class="bg-pulse-orange/20 border-2 border-pulse-orange/30 rounded-pulse-lg shadow-pulse p-6 mb-8">
+      <h2 class="text-xl font-bold text-pulse-orange mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+        Review Organization Request
+      </h2>
+      <p class="text-text-secondary mb-4">This organization is pending approval. Review and make a decision.</p>
+      <form method="post" action="{% url 'review-organization' organization.pk %}" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label for="review_notes" class="block text-sm font-medium text-text-secondary mb-2">Review Notes (Optional)</label>
+          <textarea name="review_notes" id="review_notes" rows="3" 
+                    class="w-full px-4 py-2 border border-pulse-orange/30 rounded-pulse focus:ring-2 focus:ring-pulse-orange focus:border-pulse-orange bg-pulse-navyLighter text-white placeholder:text-text-muted"
+                    placeholder="Add any notes about your decision..."></textarea>
+        </div>
+        <div class="flex gap-3">
+          <button type="submit" name="action" value="approve"
+                  class="flex-1 px-6 py-3 bg-pulse-green text-white rounded-pulse hover:opacity-90 transition-colors font-semibold shadow-pulse-sm">
+            Approve Organization
+          </button>
+          <button type="submit" name="action" value="reject"
+                  class="flex-1 px-6 py-3 bg-pulse-red text-white rounded-pulse hover:opacity-90 transition-colors font-semibold shadow-pulse-sm">
+            Reject Organization
+          </button>
+        </div>
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <a href="{% url 'organization-members' organization.pk %}"
+         class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-6 hover:shadow-pulse transition-all transform hover:-translate-y-1 border border-pulse-blue/20">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-white mb-1">Manage Members</h3>
+            <p class="text-sm text-text-secondary">View and manage organization members</p>
+          </div>
+          <svg class="w-8 h-8 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+        </div>
+      </a>
+      
+      <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-6 border border-pulse-blue/20">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-lg font-semibold text-white mb-1">Invite Link</h3>
+            <p class="text-sm text-text-secondary">Copy invite link to share</p>
+          </div>
+          <svg class="w-8 h-8 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+          </svg>
+        </div>
+        {% with invite=organization.get_or_create_invite %}
+        <div class="flex items-center gap-2">
+          <input type="text" 
+                 value="{{ request.scheme }}://{{ request.get_host }}{% url 'join-organization-invite' invite.token %}" 
+                 readonly
+                 class="flex-1 px-4 py-2 border border-pulse-blue/30 rounded-pulse bg-pulse-navyLighter text-white text-sm font-mono"
+                 id="invite-link">
+          <button onclick="copyInviteLink()" 
+                  class="px-4 py-2 bg-pulse-purple text-white rounded-pulse hover:opacity-90 transition-colors text-sm font-medium shadow-pulse-sm">
+            Copy
+          </button>
+        </div>
+        {% endwith %}
+      </div>
+    </div>
+
+    <!-- Admins Section -->
+    {% if admins %}
+    <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-6 mb-8 border border-pulse-blue/20">
+      <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6 text-pulse-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+        </svg>
+        Organization Admins ({{ admins|length }})
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for admin in admins %}
+        <div class="bg-pulse-purple/20 rounded-pulse p-4 border border-pulse-purple/30">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-pulse-gradient rounded-full flex items-center justify-center text-white font-semibold shadow-pulse-sm">
+              {{ admin|get_initials }}
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-white">{{ admin|get_display_name }}</div>
+              <div class="text-sm text-text-muted">{{ admin.email }}</div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Organizers Section -->
+    <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-6 mb-8 border border-pulse-blue/20">
+      <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6 text-pulse-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M5.5 12.5l1.5 1.5 3-3m0 0l-1.5-1.5M12 9l-1.5 1.5M12 3h.01M21 12h.01M12 21h.01M3 12h.01"></path>
+        </svg>
+        Organizers ({{ organizers|length }})
+      </h2>
+      {% if organizers %}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for organizer in organizers %}
+        <div class="bg-pulse-navyLighter/50 rounded-pulse p-4 border border-pulse-blue/20">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-pulse-gradient rounded-full flex items-center justify-center text-white font-semibold shadow-pulse-sm">
+              {{ organizer.get_full_name.0|default:organizer.username.0|upper }}
+            </div>
+            <div class="flex-1">
+              <div class="font-semibold text-white">{{ organizer.get_full_name|default:organizer.username }}</div>
+              <div class="text-sm text-text-muted">{{ organizer.email }}</div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-text-muted text-center py-8">No organizers assigned yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-6 border border-pulse-blue/20">
+        <h3 class="text-lg font-semibold text-white mb-4">Recent Events</h3>
+        {% with recent_events=organization.events.all|slice:":5" %}
+        {% if recent_events %}
+        <div class="space-y-3">
+          {% for event in recent_events %}
+          <a href="{% url 'event-detail' event.pk %}" 
+             class="block p-3 bg-pulse-navyLighter/50 rounded-pulse hover:bg-pulse-navyLighter transition-colors border border-pulse-blue/20">
+            <div class="font-medium text-white">{{ event.title }}</div>
+            <div class="text-sm text-text-muted">{{ event.start_datetime|date:"M d, Y" }}</div>
+          </a>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-text-muted text-center py-4">No events yet.</p>
+        {% endif %}
+        {% endwith %}
+      </div>
+      
+      <div class="bg-pulse-navyLight rounded-pulse-lg shadow-pulse p-6 border border-pulse-blue/20">
+        <h3 class="text-lg font-semibold text-white mb-4">Recent Announcements</h3>
+        {% with recent_announcements=organization.announcements.all|slice:":5" %}
+        {% if recent_announcements %}
+        <div class="space-y-3">
+          {% for announcement in recent_announcements %}
+          <div class="p-3 bg-pulse-navyLighter/50 rounded-pulse border border-pulse-blue/20">
+            <div class="font-medium text-white">{{ announcement.title }}</div>
+            <div class="text-sm text-text-muted">{{ announcement.created_at|date:"M d, Y" }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-text-muted text-center py-4">No announcements yet.</p>
+        {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyInviteLink() {
+  const linkInput = document.getElementById('invite-link');
+  linkInput.select();
+  document.execCommand('copy');
+  
+  // Show feedback
+  const button = event.target;
+  const originalText = button.textContent;
+  button.textContent = 'Copied!';
+  button.classList.add('bg-green-600');
+  button.classList.remove('bg-purple-600');
+  
+  setTimeout(() => {
+    button.textContent = originalText;
+    button.classList.remove('bg-green-600');
+    button.classList.add('bg-purple-600');
+  }, 2000);
+}
+</script>
+{% endblock %}
+
