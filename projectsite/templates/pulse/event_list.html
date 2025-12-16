@@ -583,14 +583,14 @@
                   </span>
                   {% endif %}
 
-                  <!-- Debug Info on Card -->
+                  {% comment %} <!-- Debug Info on Card -->
                   <div class="mt-2 p-2 bg-black/40 rounded text-[10px] text-yellow-200/80 font-mono space-y-0.5">
                     <div>Date: {{ event.event_date|default:"None" }}</div>
                     <div>Start: {% if event.start_datetime %}{{ event.start_datetime|date:"M d, Y H:i" }}{% else %}None{% endif %}</div>
                     <div>End: {% if event.end_datetime %}{{ event.end_datetime|date:"M d, Y H:i" }}{% else %}None{% endif %}</div>
                     <div>Now (server): {{ now|date:"M d, Y H:i" }} ({{ now|date:"T" }})</div>
                     <div>Ongoing: {{ event.is_ongoing|yesno:"Yes,No" }} | Past: {{ event.is_past|yesno:"Yes,No" }} | Upcoming: {{ event.is_upcoming|yesno:"Yes,No" }}</div>
-                  </div>
+                  </div> {% endcomment %}
 
                   <!-- Mandatory/Optional -->
                   {% if event.is_mandatory %}
