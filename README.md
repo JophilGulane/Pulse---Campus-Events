@@ -277,9 +277,9 @@ Navigate to `/admin/` and login with superuser credentials.
 ## Production Deployment
 
 1. **Set `DEBUG=False`** in environment variables
-2. **Use a production database** (PostgreSQL recommended)
+2. **Use a production database** (I will use PostgreSQL in the future)
 3. **Configure `ALLOWED_HOSTS`** in settings
-4. **Set up proper static file serving** (WhiteNoise is included)
+4. **Set up proper static file serving**
 5. **Use environment variables** for all secrets
 6. **Set up SSL/HTTPS**
 7. **Configure email backend** for production
